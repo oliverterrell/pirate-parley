@@ -1,6 +1,7 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
+import { HowToPlay } from "./HowToPlay.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
 type WebViewMessage =
@@ -46,6 +47,7 @@ Devvit.addCustomPostType({
     const onMessage = async (msg: WebViewMessage) => {
       switch (msg.type) {
         case 'setCounter':
+          console.log("set counter message")
           await context.redis.set(`counter_${context.postId}`, msg.data.newCounter.toString());
           context.ui.webView.postMessage('myWebView', {
             type: 'updateCounter',
@@ -57,6 +59,7 @@ Devvit.addCustomPostType({
           break;
         case 'initialData':
         case 'updateCounter':
+          console.log("update counter message received")
           break;
 
         default:
@@ -79,34 +82,12 @@ Devvit.addCustomPostType({
     // Render the custom post type
     return (
       <vstack grow padding="small">
-        <vstack
-          grow={!webviewVisible}
-          height={webviewVisible ? '0%' : '100%'}
-          alignment="middle center"
-        >
-          <text size="xlarge" weight="bold">
-            Example App
-          </text>
-          <spacer />
-          <vstack alignment="start middle">
-            <hstack>
-              <text size="medium">Username:</text>
-              <text size="medium" weight="bold">
-                {' '}
-                {username ?? ''}
-              </text>
-            </hstack>
-            <hstack>
-              <text size="medium">Current counter:</text>
-              <text size="medium" weight="bold">
-                {' '}
-                {counter ?? ''}
-              </text>
-            </hstack>
-          </vstack>
-          <spacer />
-          <button onPress={onShowWebviewClick}>Launch App</button>
-        </vstack>
+        <HowToPlay
+          webviewVisible={webviewVisible}
+          counter={counter}
+          username={username}
+          onShowWebviewClick={onShowWebviewClick}
+        />
         <vstack grow={webviewVisible} height={webviewVisible ? '100%' : '0%'}>
           <vstack border="thick" borderColor="black" height={webviewVisible ? '100%' : '0%'}>
             <webview
