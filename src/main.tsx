@@ -1,22 +1,22 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
-import { HowToPlay } from "./HowToPlay.js"
+import { Welcome } from "./Welcome.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
 type WebViewMessage =
   | {
-      type: 'initialData';
-      data: { username: string; currentCounter: number };
-    }
+  type: 'initialData';
+  data: { username: string; currentCounter: number };
+}
   | {
-      type: 'setCounter';
-      data: { newCounter: number };
-    }
+  type: 'setCounter';
+  data: { newCounter: number };
+}
   | {
-      type: 'updateCounter';
-      data: { currentCounter: number };
-    };
+  type: 'updateCounter';
+  data: { currentCounter: number };
+};
 
 Devvit.configure({
   redditAPI: true,
@@ -28,21 +28,21 @@ Devvit.addCustomPostType({
   name: "Pirate's Parley",
   height: 'tall',
   render: (context) => {
+    
     // Load username with `useAsync` hook
     const [username] = useState(async () => {
       const currUser = await context.reddit.getCurrentUser();
       return currUser?.username ?? 'anon';
     });
-
+    
     // Load latest counter from redis with `useAsync` hook
     const [counter, setCounter] = useState(async () => {
       const redisCount = await context.redis.get(`counter_${context.postId}`);
       return Number(redisCount ?? 0);
     });
-
-    // Create a reactive state for web view visibility
+    
     const [webviewVisible, setWebviewVisible] = useState(false);
-
+    
     // When the web view invokes `window.parent.postMessage` this function is called
     const onMessage = async (msg: WebViewMessage) => {
       switch (msg.type) {
@@ -61,12 +61,12 @@ Devvit.addCustomPostType({
         case 'updateCounter':
           console.log("update counter message received")
           break;
-
+        
         default:
           throw new Error(`Unknown message type: ${msg satisfies never}`);
       }
     };
-
+    
     // When the button is clicked, send initial data to web view and show it
     const onShowWebviewClick = () => {
       setWebviewVisible(true);
@@ -78,11 +78,11 @@ Devvit.addCustomPostType({
         },
       });
     };
-
+    
     // Render the custom post type
     return (
       <vstack grow padding="small">
-        <HowToPlay
+        <Welcome
           webviewVisible={webviewVisible}
           counter={counter}
           username={username}
