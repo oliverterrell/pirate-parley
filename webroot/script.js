@@ -5,7 +5,7 @@ class App {
     const decreaseButton = document.querySelector('#btn-decrease');
     const usernameLabel = document.querySelector('#username');
     const counterLabel = document.querySelector('#counter');
-    var counter = 0;
+    let counter = 0;
 
     // When the Devvit app sends a message with `context.ui.webView.postMessage`, this will be triggered
     window.addEventListener('message', (ev) => {

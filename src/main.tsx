@@ -23,6 +23,13 @@ Devvit.configure({
   redis: true,
 });
 
+Devvit.addSchedulerJob({
+  name: 'new-day', // you can use an arbitrary name here
+  onRun: async (event, context) => {
+    // do stuff when the job is executed
+  },
+});
+
 // Add a custom post type to Devvit
 Devvit.addCustomPostType({
   name: "Pirate's Parley",
