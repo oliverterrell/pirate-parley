@@ -1,45 +1,34 @@
 import { RedisClient } from '@devvit/public-api';
-import { GameBoard } from './DailyGameManager.js';
+import { GameBoard } from './GameManager.js';
+import { DateManager } from './DateManager.js';
 
-interface PlayerPosition {
+interface BoardPosition {
   row: number;
   col: number;
 }
 
 interface PlayerProgress {
-  position: PlayerPosition;
+  position: BoardPosition;
+  energyRemaining: number;
   collectedPowerUps: string[];
-  openedChests: PlayerPosition[];
+  openedChests: BoardPosition[];
   foundLetters: string[];
   moves: number;
   startTime: number;
   lastSaved: number;
 }
 
-class GameStateManager {
+class PlayerGameStateManager {
   private readonly redis: RedisClient;
   
   constructor(redis: RedisClient) {
     this.redis = redis;
   }
   
-  private getCurrentDay(): string {
-    const date = new Date();
-    const pacificDate = new Date(date.toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles'
-    }));
-    
-    if (pacificDate.getHours() < 4) {
-      pacificDate.setDate(pacificDate.getDate() - 1);
-    }
-    
-    return pacificDate.toISOString().split('T')[0];
-  }
-  
   // Get game state for current day
   async getDailyGame(): Promise<GameBoard | null> {
-    const currentDay = this.getCurrentDay();
-    const gameKey = `game:${currentDay}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const gameKey = `game:${currentDateString}`;
     
     const gameState = await this.redis.get(gameKey);
     return gameState ? JSON.parse(gameState) : null;
@@ -47,16 +36,16 @@ class GameStateManager {
   
   // Store a new daily game
   async setDailyGame(gameState: GameBoard): Promise<void> {
-    const currentDay = this.getCurrentDay();
-    const gameKey = `game:${currentDay}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const gameKey = `game:${currentDateString}`;
     
-    await this.redis.set(gameKey, JSON.stringify(gameState), { ex: 48 * 60 * 60 });
+    await this.redis.set(gameKey, JSON.stringify(gameState), { expiration: DateManager.get2DaysFromNow() });
   }
   
   // Initialize player progress for today's game
-  async initializePlayerProgress(username: string, startPosition: PlayerPosition): Promise<void> {
-    const currentDay = this.getCurrentDay();
-    const progressKey = `progress:${currentDay}:${username}`;
+  async initializePlayerProgress(username: string, startPosition: BoardPosition): Promise<void> {
+    const currentDateString = DateManager.getCurrentDateString();
+    const progressKey = `progress:${currentDateString}:${username}`;
     
     // Check if progress already exists
     const existingProgress = await this.redis.get(progressKey);
@@ -66,6 +55,7 @@ class GameStateManager {
     
     const initialProgress: PlayerProgress = {
       position: startPosition,
+      energyRemaining: 30,
       collectedPowerUps: [],
       openedChests: [],
       foundLetters: [],
@@ -74,13 +64,13 @@ class GameStateManager {
       lastSaved: Date.now()
     };
     
-    await this.redis.set(progressKey, JSON.stringify(initialProgress), { ex: 48 * 60 * 60 });
+    await this.redis.set(progressKey, JSON.stringify(initialProgress), { expiration: DateManager.get2DaysFromNow() });
   }
   
   // Get player's current progress
   async getPlayerProgress(username: string): Promise<PlayerProgress | null> {
-    const currentDay = this.getCurrentDay();
-    const progressKey = `progress:${currentDay}:${username}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const progressKey = `progress:${currentDateString}:${username}`;
     
     const progress = await this.redis.get(progressKey);
     return progress ? JSON.parse(progress) : null;
@@ -88,12 +78,12 @@ class GameStateManager {
   
   // Update player progress
   async updatePlayerProgress(username: string, updates: Partial<PlayerProgress>): Promise<void> {
-    const currentDay = this.getCurrentDay();
-    const progressKey = `progress:${currentDay}:${username}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const progressKey = `progress:${currentDateString}:${username}`;
     
     const currentProgress = await this.getPlayerProgress(username);
     if (!currentProgress) {
-      throw new Error('No progress found for player');
+      await this.initializePlayerProgress(username, { row: 0, col: 0 });
     }
     
     const updatedProgress: PlayerProgress = {
@@ -102,7 +92,7 @@ class GameStateManager {
       lastSaved: Date.now()
     };
     
-    await this.redis.set(progressKey, JSON.stringify(updatedProgress), { ex: 48 * 60 * 60 });
+    await this.redis.set(progressKey, JSON.stringify(updatedProgress), { expiration: DateManager.get2DaysFromNow() });
   }
   
   // Check if player has completed today's game
@@ -118,7 +108,7 @@ class GameStateManager {
   
   // Record final completion
   async recordCompletion(username: string): Promise<void> {
-    const currentDay = this.getCurrentDay();
+    const currentDateString = DateManager.getCurrentDateString();
     const progress = await this.getPlayerProgress(username);
     
     if (!progress) {
@@ -133,7 +123,7 @@ class GameStateManager {
     };
     
     // Store completion data
-    const completionKey = `completion:${currentDay}:${username}`;
-    await this.redis.set(completionKey, JSON.stringify(completionData), { expiration: 48 * 60 * 60 });
+    const completionKey = `completion:${currentDateString}:${username}`;
+    await this.redis.set(completionKey, JSON.stringify(completionData), { expiration: DateManager.get2DaysFromNow() });
   }
 }

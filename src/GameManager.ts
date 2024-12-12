@@ -1,4 +1,5 @@
 import { Devvit, RedisClient } from '@devvit/public-api';
+import { DateManager } from './DateManager.js';
 
 // Types for our game elements
 interface CellContent {
@@ -36,26 +37,11 @@ interface PlayerScore {
   timeCompleted: number;
 }
 
-class DailyGameManager {
+class GameManager {
   private redis: RedisClient;
   
   constructor(redis: RedisClient) {
     this.redis = redis;
-  }
-  
-  private getCurrentDay(): string {
-    // Get Pacific time
-    const date = new Date();
-    const pacificDate = new Date(date.toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles'
-    }));
-    
-    // If it's before 4 AM Pacific, use previous day
-    if (pacificDate.getHours() < 4) {
-      pacificDate.setDate(pacificDate.getDate() - 1);
-    }
-    
-    return pacificDate.toISOString().split('T')[0];
   }
   
   private async generateDailyGame(day: string): Promise<GameState> {
@@ -74,22 +60,23 @@ class DailyGameManager {
   }
   
   async getCurrentGame(): Promise<GameState> {
-    const currentDay = this.getCurrentDay();
-    const gameKey = `game:${currentDay}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const gameKey = `game:${currentDateString}`;
     
     // Try to get existing game
-    let game = await this.redis.get(gameKey);
+    let existingGame = await this.redis.get(gameKey);
+    let game: GameState;
     
-    if (!game) {
+    if (!existingGame) {
       // Generate new game if none exists
-      game = await this.generateDailyGame(currentDay);
+      game = await this.generateDailyGame(currentDateString);
       // Store for 48 hours (enough to cover leaderboard viewing period)
-      await this.redis.set(gameKey, JSON.stringify(game), { ex: 48 * 60 * 60 });
+      await this.redis.set(gameKey, JSON.stringify(game), { expiration: DateManager.get2DaysFromNow() });
     } else {
-      game = JSON.parse(game);
+      game = JSON.parse(existingGame);
     }
     
-    return game as GameState;
+    return game;
   }
   
   async getYesterdayLeaderboard(): Promise<PlayerScore[]> {
@@ -102,9 +89,9 @@ class DailyGameManager {
   }
   
   async recordScore(username: string, score: number): Promise<void> {
-    const currentDay = this.getCurrentDay();
-    const leaderboardKey = `leaderboard:${currentDay}`;
-    const userCompletionKey = `completion:${currentDay}:${username}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const leaderboardKey = `leaderboard:${currentDateString}`;
+    const userCompletionKey = `completion:${currentDateString}:${username}`;
     
     // Check if user already completed today's challenge
     const hasCompleted = await this.redis.get(userCompletionKey);
@@ -113,7 +100,7 @@ class DailyGameManager {
     }
     
     // Record completion
-    await this.redis.set(userCompletionKey, 'true', { ex: 48 * 60 * 60 });
+    await this.redis.set(userCompletionKey, 'true', { expiration: DateManager.get2DaysFromNow() });
     
     // Update leaderboard
     let leaderboard = await this.redis.get(leaderboardKey);
@@ -135,12 +122,12 @@ class DailyGameManager {
     const topScores = scores.slice(0, 100);
     
     // Store for 48 hours
-    await this.redis.set(leaderboardKey, JSON.stringify(topScores), { ex: 48 * 60 * 60 });
+    await this.redis.set(leaderboardKey, JSON.stringify(topScores), { expiration: DateManager.get2DaysFromNow() });
   }
   
   async hasPlayerCompletedToday(username: string): Promise<boolean> {
-    const currentDay = this.getCurrentDay();
-    const userCompletionKey = `completion:${currentDay}:${username}`;
+    const currentDateString = DateManager.getCurrentDateString();
+    const userCompletionKey = `completion:${currentDateString}:${username}`;
     return !!(await this.redis.get(userCompletionKey));
   }
 }
