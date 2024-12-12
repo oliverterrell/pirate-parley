@@ -7,191 +7,204 @@
     />
     <meta charset="UTF-8" />
     <title>Pirate's Parley</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abel&family=Jacquard+12&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
   <div class="grid-container">
-    <img src="../assets/Pirates Parley.png" style="position: absolute; left: 38%;" alt="Pirate's Parley" />
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="top-hud-backgrounds">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <div class="top-hud-container jetbrains-mono-text">
+        <div class="time-box"><div class="hud-text">04m 20s</div></div>
+        <div class="energy-box"><div class="hud-text">🍗: <span id="player-energy">29</span>/30</div></div>
+        <div class="score-box"><div class="hud-text"><span id="player-score">69</span> pts</div></div>
+      </div>
+      <div class="grid-cell" data-position="0,0"></div>
+      <div class="grid-cell" data-position="0,1"></div>
+      <div class="grid-cell" data-position="0,2"></div>
+      <div class="grid-cell" data-position="0,3"></div>
+      <div class="grid-cell" data-position="0,4"></div>
+      <div class="grid-cell" data-position="0,5"></div>
+      <div class="grid-cell" data-position="0,6"></div>
+      <div class="grid-cell" data-position="0,7"></div>
+      <div class="grid-cell" data-position="0,8"></div>
+      <div class="grid-cell" data-position="0,9"></div>
+      <div class="grid-cell" data-position="0,10"></div>
+      <div class="grid-cell" data-position="0,11"></div>
+      <div class="grid-cell" data-position="0,12"></div>
+      <div class="grid-cell" data-position="0,13"></div>
+      <div class="grid-cell" data-position="0,14"></div>
+    </div>
+    
+    <div class="grid-row">
+      <div class="grid-cell" data-position="1,0"></div>
+      <div class="grid-cell" data-position="1,1" style="cursor:pointer;"><img src="assets/pirate.png" alt="player1" width="28" height="29" /> </div>
+      <div class="grid-cell" data-position="1,2"></div>
+      <div class="grid-cell" data-position="1,3"></div>
+      <div class="grid-cell" data-position="1,4"></div>
+      <div class="grid-cell" data-position="1,5"></div>
+      <div class="grid-cell" data-position="1,6"></div>
+      <div class="grid-cell" data-position="1,7"></div>
+      <div class="grid-cell" data-position="1,8"></div>
+      <div class="grid-cell" data-position="1,9"></div>
+      <div class="grid-cell" data-position="1,10"></div>
+      <div class="grid-cell" data-position="1,11"></div>
+      <div class="grid-cell" data-position="1,12"></div>
+      <div class="grid-cell" data-position="1,13"></div>
+      <div class="grid-cell" data-position="1,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="2,0"></div>
+      <div class="grid-cell" data-position="2,1"></div>
+      <div class="grid-cell" data-position="2,2"></div>
+      <div class="grid-cell" data-position="2,3"></div>
+      <div class="grid-cell" data-position="2,4"></div>
+      <div class="grid-cell" data-position="2,5"></div>
+      <div class="grid-cell" data-position="2,6"></div>
+      <div class="grid-cell" data-position="2,7"></div>
+      <div class="grid-cell" data-position="2,8"></div>
+      <div class="grid-cell" data-position="2,9"></div>
+      <div class="grid-cell" data-position="2,10"></div>
+      <div class="grid-cell" data-position="2,11"></div>
+      <div class="grid-cell" data-position="2,12"></div>
+      <div class="grid-cell" data-position="2,13"></div>
+      <div class="grid-cell" data-position="2,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="3,0"></div>
+      <div class="grid-cell" data-position="3,1"></div>
+      <div class="grid-cell" data-position="3,2"></div>
+      <div class="grid-cell" data-position="3,3"></div>
+      <div class="grid-cell" data-position="3,4"></div>
+      <div class="grid-cell" data-position="3,5"></div>
+      <div class="grid-cell" data-position="3,6"></div>
+      <div class="grid-cell" data-position="3,7"></div>
+      <div class="grid-cell" data-position="3,8"></div>
+      <div class="grid-cell" data-position="3,9"></div>
+      <div class="grid-cell" data-position="3,10"></div>
+      <div class="grid-cell" data-position="3,11"></div>
+      <div class="grid-cell" data-position="3,12"></div>
+      <div class="grid-cell" data-position="3,13"></div>
+      <div class="grid-cell" data-position="3,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="4,0"></div>
+      <div class="grid-cell" data-position="4,1"></div>
+      <div class="grid-cell" data-position="4,2"></div>
+      <div class="grid-cell" data-position="4,3"></div>
+      <div class="grid-cell" data-position="4,4"></div>
+      <div class="grid-cell" data-position="4,5"></div>
+      <div class="grid-cell" data-position="4,6"></div>
+      <div class="grid-cell" data-position="4,7"></div>
+      <div class="grid-cell" data-position="4,8"></div>
+      <div class="grid-cell" data-position="4,9"></div>
+      <div class="grid-cell" data-position="4,10"></div>
+      <div class="grid-cell" data-position="4,11"></div>
+      <div class="grid-cell" data-position="4,12"></div>
+      <div class="grid-cell" data-position="4,13"></div>
+      <div class="grid-cell" data-position="4,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="5,0"></div>
+      <div class="grid-cell" data-position="5,1"></div>
+      <div class="grid-cell" data-position="5,2"></div>
+      <div class="grid-cell" data-position="5,3"></div>
+      <div class="grid-cell" data-position="5,4"></div>
+      <div class="grid-cell" data-position="5,5"></div>
+      <div class="grid-cell" data-position="5,6"></div>
+      <div class="grid-cell" data-position="5,7"></div>
+      <div class="grid-cell" data-position="5,8"></div>
+      <div class="grid-cell" data-position="5,9"></div>
+      <div class="grid-cell" data-position="5,10"></div>
+      <div class="grid-cell" data-position="5,11"></div>
+      <div class="grid-cell" data-position="5,12"></div>
+      <div class="grid-cell" data-position="5,13"></div>
+      <div class="grid-cell" data-position="5,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="6,0"></div>
+      <div class="grid-cell" data-position="6,1"></div>
+      <div class="grid-cell" data-position="6,2"></div>
+      <div class="grid-cell" data-position="6,3"></div>
+      <div class="grid-cell" data-position="6,4"></div>
+      <div class="grid-cell" data-position="6,5"></div>
+      <div class="grid-cell" data-position="6,6"></div>
+      <div class="grid-cell" data-position="6,7"></div>
+      <div class="grid-cell" data-position="6,8"></div>
+      <div class="grid-cell" data-position="6,9"></div>
+      <div class="grid-cell" data-position="6,10"></div>
+      <div class="grid-cell" data-position="6,11"></div>
+      <div class="grid-cell" data-position="6,12"></div>
+      <div class="grid-cell" data-position="6,13"></div>
+      <div class="grid-cell" data-position="6,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="7,0"></div>
+      <div class="grid-cell" data-position="7,1"></div>
+      <div class="grid-cell" data-position="7,2"></div>
+      <div class="grid-cell" data-position="7,3"></div>
+      <div class="grid-cell" data-position="7,4"></div>
+      <div class="grid-cell" data-position="7,5"></div>
+      <div class="grid-cell" data-position="7,6"></div>
+      <div class="grid-cell" data-position="7,7"></div>
+      <div class="grid-cell" data-position="7,8"></div>
+      <div class="grid-cell" data-position="7,9"></div>
+      <div class="grid-cell" data-position="7,10"></div>
+      <div class="grid-cell" data-position="7,11"></div>
+      <div class="grid-cell" data-position="7,12"></div>
+      <div class="grid-cell" data-position="7,13"></div>
+      <div class="grid-cell" data-position="7,14"></div>
     </div>
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="8,0"></div>
+      <div class="grid-cell" data-position="8,1"></div>
+      <div class="grid-cell" data-position="8,2"></div>
+      <div class="grid-cell" data-position="8,3"></div>
+      <div class="grid-cell" data-position="8,4"></div>
+      <div class="grid-cell" data-position="8,5"></div>
+      <div class="grid-cell" data-position="8,6"></div>
+      <div class="grid-cell" data-position="8,7"></div>
+      <div class="grid-cell" data-position="8,8"></div>
+      <div class="grid-cell" data-position="8,9"></div>
+      <div class="grid-cell" data-position="8,10"></div>
+      <div class="grid-cell" data-position="8,11"></div>
+      <div class="grid-cell" data-position="8,12"></div>
+      <div class="grid-cell" data-position="8,13"></div>
+      <div class="grid-cell" data-position="8,14"></div>
     </div>
+    
+    
     <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
-      <div class="grid-cell"></div>
+      <div class="grid-cell" data-position="9,0"></div>
+      <div class="grid-cell" data-position="9,1"></div>
+      <div class="grid-cell" data-position="9,2"></div>
+      <div class="grid-cell" data-position="9,3"></div>
+      <div class="grid-cell" data-position="9,4"></div>
+      <div class="grid-cell" data-position="9,5"></div>
+      <div class="grid-cell" data-position="9,6"></div>
+      <div class="grid-cell" data-position="9,7"></div>
+      <div class="grid-cell" data-position="9,8"></div>
+      <div class="grid-cell" data-position="9,9"></div>
+      <div class="grid-cell" data-position="9,10"></div>
+      <div class="grid-cell" data-position="9,11"></div>
+      <div class="grid-cell" data-position="9,12"></div>
+      <div class="grid-cell" data-position="9,13"></div>
+      <div class="grid-cell" data-position="9,14"></div>
+      <div class="bottom-solve-bar"></div>
     </div>
   </div>
   <div>
-    <h3>Your username is <span id="username">Guest</span></h3>
-    <h3>Current health is at: <span id="counter">0</span></h3>
+    <h3 style="margin: 8px 0;"><span id="username">Guest</span></h3>
     <div class="button-container">
       <button id="btn-increase">Citrus 🍋️</button>
       <button id="btn-decrease">Scurvy 🧌</button>
     </div>
-    <h3>Last message from Devvit blocks:</h3>
-    <pre id="messageOutput"></pre>
     <script type="application/javascript" src="script.js"></script>
   </div>
   </body>
