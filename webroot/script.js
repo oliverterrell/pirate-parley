@@ -211,6 +211,51 @@ let isInitialPosition = true;
 let currentHandlers = null;
 let currentPosition = null;
 let currentEnergy = null;
+let currentGameMap = null;
+
+const updateMapDisplay = () => {
+  if (!currentGameMap) return;
+  
+  // Clear existing map items
+  document.querySelectorAll('.map-item').forEach(item => item.remove());
+  
+  // Loop through the board and add items
+  Object.entries(currentGameMap.board).forEach(([row, cols]) => {
+    const rowNum = parseInt(row.substring(1)); // Get number from "r1", "r2" etc
+    
+    Object.entries(cols).forEach(([col, item]) => {
+      const colNum = parseInt(col.substring(1)); // Get number from "c1", "c2" etc
+      const square = document.querySelector(`div[data-position="${rowNum},${colNum}"]`);
+      
+      if (square) {
+        // Add appropriate class and content based on item type
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('map-item', `map-item-${item}`);
+        
+        // Add appropriate image or content based on item type
+        switch(item) {
+          case 'bush':
+            itemElement.innerHTML = '<img src="assets/bush.png" alt="bush" width="29" height="29" />';
+            break;
+          case 'chest':
+            itemElement.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" />';
+            break;
+          case 'drumstick':
+            itemElement.innerHTML = '<img src="assets/drumstick.png" alt="drumstick" width="29" height="29" />';
+            break;
+          case 'rum':
+            itemElement.innerHTML = '<img src="assets/rum.png" alt="rum" width="29" height="29" />';
+            break;
+          default:
+            break;
+        }
+        
+        square.appendChild(itemElement);
+      }
+    });
+  });
+};
+
 
 const movePlayer = (newPosition, oldPosition) => {
   // Make sure currentEnergy is initialized
@@ -288,7 +333,20 @@ class App {
         // Load initial data
         if (message.type === 'initialData') {
           console.log('Initial data received:', message.data);
-          const {username, currentCounter, playerPosition, playerEnergy: redisPlayerEnergy} = message.data;
+          const {
+            username,
+            currentCounter,
+            playerPosition,
+            playerEnergy: redisPlayerEnergy,
+            gameMap
+          } = message.data;
+          
+          // Store game map
+          currentGameMap = gameMap;
+          
+          // Update map display
+          updateMapDisplay();
+          
           usernameLabel.innerText = 'u/' + username;
           playerScore.innerText = counter = currentCounter;
           
@@ -345,7 +403,7 @@ class App {
     increaseButton.addEventListener('click', () => {
       // Sends a message to the Devvit app
       window.parent?.postMessage(
-        {type: 'setCounter', data: {newCounter: Number(counter + 1)}},
+        {type: 'setCounter', data: {newCounter: Number(counter + 1), playerEnergy: 30}},
         '*'
       );
     });

@@ -106,10 +106,12 @@ body {
   z-index: 10;
   position: relative;
 }
+  /*.grid-cell > img {*/
+  /*  z-index: 20;*/
+  /*}*/
 
 .available-move {
-  background-color: #DD3D3D;
-  opacity: 0.2;
+  background-color: #c2bd69;
 }
 
 .land-background {

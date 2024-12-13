@@ -1,6 +1,7 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
+import { aargh_1 } from './games/1_aargh.js';
 import { DateManager } from './DateManager.js';
 import { Welcome } from "./Welcome.js"
 
@@ -13,6 +14,7 @@ type WebViewMessage =
     currentCounter: number,
     playerPosition: { row: number, col: number },
     playerEnergy: number;
+    gameMap: { [key: string]: { [key: string]: string } }
   };
 }
   | {
@@ -23,7 +25,7 @@ type WebViewMessage =
 }
   | {
   type: 'setCounter';
-  data: { newCounter: number };
+  data: { newCounter: number, playerEnergy: number };
 }
   | {
   type: 'updateCounter';
@@ -83,13 +85,16 @@ Devvit.addCustomPostType({
         case 'setCounter':
           console.log("set counter message")
           await context.redis.set(`counter_${context.postId}`, msg.data.newCounter.toString());
+          await context.redis.set(energyKey, msg.data.playerEnergy.toString())
           context.ui.webView.postMessage('myWebView', {
             type: 'updateCounter',
             data: {
               currentCounter: msg.data.newCounter,
+              playerEnergy: msg.data.playerEnergy
             },
           });
           setCounter(msg.data.newCounter);
+          setPlayerEnergy(msg.data.playerEnergy)
           break;
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
@@ -127,7 +132,8 @@ Devvit.addCustomPostType({
           username: username,
           currentCounter: counter,
           playerPosition,
-          playerEnergy: Number(playerEnergy)
+          playerEnergy: Number(playerEnergy),
+          gameMap: aargh_1
         },
       });
     };
