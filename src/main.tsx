@@ -1,13 +1,25 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
+import { DateManager } from './DateManager.js';
 import { Welcome } from "./Welcome.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
 type WebViewMessage =
   | {
   type: 'initialData';
-  data: { username: string; currentCounter: number };
+  data: {
+    username: string;
+    currentCounter: number,
+    playerPosition: { row: number, col: number },
+    playerEnergy: number;
+  };
+}
+  | {
+  type: 'movePlayer';
+  data: {
+    playerEnergy: number;
+    playerPosition: { row: number, col: number } };
 }
   | {
   type: 'setCounter';
@@ -42,6 +54,21 @@ Devvit.addCustomPostType({
       return currUser?.username ?? 'anon';
     });
     
+    const currentDateString = DateManager.getCurrentDateString();
+    const positionKey = `position:${currentDateString}:${username}`;
+    const energyKey = `energy:${currentDateString}:${username}`;
+    
+    
+    const [playerPosition, setPlayerPosition] = useState(async()=>{
+      const playerPosition = await context.redis.get(positionKey);
+      return playerPosition ? JSON.parse(playerPosition) : { row: 1, col: 1 };
+    })
+    
+    const [playerEnergy, setPlayerEnergy] = useState(async () => {
+      const playerEnergy = await context.redis.get(energyKey);
+      return Number(playerEnergy ?? 30);
+    })
+    
     // Load latest counter from redis with `useAsync` hook
     const [counter, setCounter] = useState(async () => {
       const redisCount = await context.redis.get(`counter_${context.postId}`);
@@ -64,9 +91,26 @@ Devvit.addCustomPostType({
           });
           setCounter(msg.data.newCounter);
           break;
+        case 'movePlayer':
+          console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
+          
+
+          await context.redis.set(positionKey, JSON.stringify(msg.data.playerPosition));
+          await context.redis.set(energyKey, msg.data.playerEnergy.toString());
+          
+          context.ui.webView.postMessage('myWebView', {
+            type: 'movePlayer',
+            data: {
+              playerPosition: msg.data.playerPosition,
+              playerEnergy: msg.data.playerEnergy
+            },
+          });
+          setPlayerPosition(msg.data.playerPosition);
+          setPlayerEnergy(msg.data.playerEnergy)
+          break;
         case 'initialData':
         case 'updateCounter':
-          console.log("update counter message received")
+          console.log(`${msg.type} message received`)
           break;
         
         default:
@@ -82,6 +126,8 @@ Devvit.addCustomPostType({
         data: {
           username: username,
           currentCounter: counter,
+          playerPosition,
+          playerEnergy: Number(playerEnergy)
         },
       });
     };
