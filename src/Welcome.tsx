@@ -30,7 +30,7 @@ export const Welcome = ({webviewVisible, counter, username, onShowWebviewClick})
             </text>
           </hstack>
           </vstack>
-          <zstack width={'10%'}>&nbsp;</zstack>
+          <image url={'Pirate Flag.png'} imageHeight={'50px'} imageWidth={'44px'} description={'Jolly Roger'}/>
         </hstack>
         <vstack alignment="start middle" border={'thick'} borderColor={'#e89a60'} width={'100%'}>
           <hstack

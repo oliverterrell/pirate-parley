@@ -1,8 +1,8 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
-import { aargh_1 } from './games/1_aargh.js';
 import { DateManager } from './DateManager.js';
+import { aargh_1 } from './games/1_aargh.js';
 import { Welcome } from "./Welcome.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
@@ -14,18 +14,21 @@ type WebViewMessage =
     currentCounter: number,
     playerPosition: { row: number, col: number },
     playerEnergy: number;
-    gameMap: { [key: string]: { [key: string]: string } }
+    gameMap: { [key: string]: { [key: string]: string } },
+    visitedSquares: string[]
   };
 }
   | {
   type: 'movePlayer';
   data: {
     playerEnergy: number;
-    playerPosition: { row: number, col: number } };
+    playerPosition: { row: number, col: number }
+    visitedSquares: string[]
+  };
 }
   | {
   type: 'setCounter';
-  data: { newCounter: number, playerEnergy: number };
+  data: { newCounter: number, playerEnergy: number, visitedSquares: string[] };
 }
   | {
   type: 'updateCounter';
@@ -59,16 +62,22 @@ Devvit.addCustomPostType({
     const currentDateString = DateManager.getCurrentDateString();
     const positionKey = `position:${currentDateString}:${username}`;
     const energyKey = `energy:${currentDateString}:${username}`;
+    const visitedSquaresKey = `visited:${currentDateString}:${username}`;
     
     
-    const [playerPosition, setPlayerPosition] = useState(async()=>{
+    const [playerPosition, setPlayerPosition] = useState(async () => {
       const playerPosition = await context.redis.get(positionKey);
-      return playerPosition ? JSON.parse(playerPosition) : { row: 1, col: 1 };
+      return playerPosition ? JSON.parse(playerPosition) : {row: 1, col: 1};
     })
     
     const [playerEnergy, setPlayerEnergy] = useState(async () => {
       const playerEnergy = await context.redis.get(energyKey);
       return Number(playerEnergy ?? 30);
+    })
+    
+    const [visitedSquares, setVisitedSquares] = useState(async () => {
+      const visitedSquares = await context.redis.get(visitedSquaresKey);
+      return visitedSquares ? visitedSquares.split('|') : [];
     })
     
     // Load latest counter from redis with `useAsync` hook
@@ -85,33 +94,39 @@ Devvit.addCustomPostType({
         case 'setCounter':
           console.log("set counter message")
           await context.redis.set(`counter_${context.postId}`, msg.data.newCounter.toString());
-          await context.redis.set(energyKey, msg.data.playerEnergy.toString())
+          await context.redis.set(energyKey, msg.data.playerEnergy.toString());
+          await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'));
+          
           context.ui.webView.postMessage('myWebView', {
             type: 'updateCounter',
             data: {
               currentCounter: msg.data.newCounter,
-              playerEnergy: msg.data.playerEnergy
+              playerEnergy: msg.data.playerEnergy,
+              visitedSquares: msg.data.visitedSquares
             },
           });
           setCounter(msg.data.newCounter);
-          setPlayerEnergy(msg.data.playerEnergy)
+          setPlayerEnergy(msg.data.playerEnergy);
+          setVisitedSquares(msg.data.visitedSquares);
           break;
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
           
-
           await context.redis.set(positionKey, JSON.stringify(msg.data.playerPosition));
           await context.redis.set(energyKey, msg.data.playerEnergy.toString());
+          await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'))
           
           context.ui.webView.postMessage('myWebView', {
             type: 'movePlayer',
             data: {
               playerPosition: msg.data.playerPosition,
-              playerEnergy: msg.data.playerEnergy
+              playerEnergy: msg.data.playerEnergy,
+              visitedSquares: msg.data.visitedSquares
             },
           });
           setPlayerPosition(msg.data.playerPosition);
-          setPlayerEnergy(msg.data.playerEnergy)
+          setPlayerEnergy(msg.data.playerEnergy);
+          setVisitedSquares(msg.data.visitedSquares);
           break;
         case 'initialData':
         case 'updateCounter':
@@ -133,7 +148,8 @@ Devvit.addCustomPostType({
           currentCounter: counter,
           playerPosition,
           playerEnergy: Number(playerEnergy),
-          gameMap: aargh_1
+          gameMap: aargh_1,
+          visitedSquares
         },
       });
     };

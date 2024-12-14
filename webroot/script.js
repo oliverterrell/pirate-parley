@@ -212,6 +212,8 @@ let currentHandlers = null;
 let currentPosition = null;
 let currentEnergy = null;
 let currentGameMap = null;
+let visitedSquares = null;
+let isProcessingMove = false;
 
 const updateMapDisplay = () => {
   if (!currentGameMap) return;
@@ -227,7 +229,7 @@ const updateMapDisplay = () => {
       const colNum = parseInt(col.substring(1)); // Get number from "c1", "c2" etc
       const square = document.querySelector(`div[data-position="${rowNum},${colNum}"]`);
       
-      if (square) {
+      if (square && !visitedSquares.has(`${rowNum},${colNum}`)) {
         // Add appropriate class and content based on item type
         const itemElement = document.createElement('div');
         itemElement.classList.add('map-item', `map-item-${item}`);
@@ -251,72 +253,165 @@ const updateMapDisplay = () => {
         }
         
         square.appendChild(itemElement);
+      } else if (item === 'chest' && visitedSquares.has(`${rowNum},${colNum}`)) {
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('map-item', `map-item-${item}`);
+        itemElement.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
+        square.appendChild(itemElement);
       }
     });
   });
 };
-
-
-const movePlayer = (newPosition, oldPosition) => {
-  // Make sure currentEnergy is initialized
-  if (currentEnergy === null) {
-    currentEnergy = 30; // Only set default if not initialized
+const handleLeaveSquare = (position) => {
+  if ((currentGameMap.board?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
+    const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
+    square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
   }
+}
+
+const handleEnterSquare = (position) => {
+  const squareType = currentGameMap.board?.['r' + position.row]?.['c' + position.col] ?? null;
+  const playerEnergy = document.querySelector('#player-energy');
   
-  // Don't allow movement if no energy left (except for initial positioning)
-  if (currentEnergy <= 0 && !arePositionsEqual(newPosition, oldPosition) && !isInitialPosition) {
+  console.log(squareType);
+  
+  if (!visitedSquares.has(position.row + ',' + position.col)) {
+    visitedSquares.add(position.row + ',' + position.col);
+    switch (squareType) {
+      case 'chest':
+        currentEnergy -= 1;
+        playerEnergy.classList.add('red-text');
+        playerEnergy.classList.remove('green-text');
+        break;
+      case 'bush':
+        playerEnergy.classList.add('red-text');
+        playerEnergy.classList.remove('green-text');
+        currentEnergy -= 2;
+        break;
+      case 'drumstick':
+        playerEnergy.classList.add('green-text');
+        playerEnergy.classList.remove('red-text');
+        currentEnergy += 1;
+        break;
+      case 'rum':
+        playerEnergy.classList.add('green-text');
+        playerEnergy.classList.remove('red-text');
+        currentEnergy += 3;
+        break;
+      case 'rock':
+        playerEnergy.classList.add('red-text');
+        playerEnergy.classList.remove('green-text');
+        currentEnergy -= 3;
+        break;
+      default:
+        playerEnergy.classList.add('red-text');
+        playerEnergy.classList.remove('green-text');
+        currentEnergy -= 1;
+        break;
+    }
+  } else {
+    playerEnergy.classList.add('red-text');
+    playerEnergy.classList.remove('green-text');
+    currentEnergy -= 1;
+  }
+
+  playerEnergy.innerText = currentEnergy;
+}
+
+// Update the movePlayer function:
+const movePlayer = async (newPosition, oldPosition) => {
+  // Don't process new moves if we're already processing one
+  if (isProcessingMove) {
+    console.log('Move already processing, ignoring new move request');
     return;
   }
-  
-  // For initial position, we need to clean up even though there's no currentHandlers yet
-  if (isInitialPosition) {
-    cleanupPosition(oldPosition, {
-      playerMouseover: null,
-      playerMouseout: null,
-      playerClick: null,
-      availableMoveClick: null,
-      ringSquareHandlers: new Map()
-    });
-    isInitialPosition = false;
-  }
-  
-  // Clean up old handlers if they exist
-  if (currentHandlers) {
-    cleanupPosition(oldPosition, currentHandlers);
-  }
-  
-  // Initialize new position and store new handlers
-  currentHandlers = initPlayer(newPosition, oldPosition);
-  
-  // Only update energy and notify parent if this was triggered by user interaction
-  // and the position actually changed
-  if (!arePositionsEqual(newPosition, oldPosition)) {
-    // Only deduct energy if this isn't the initial position set
-    if (!isInitialPosition) {
-      currentEnergy -= 1;
+
+  try {
+    isProcessingMove = true;
+    
+    // Make sure currentEnergy is initialized
+    if (currentEnergy === null) {
+      currentEnergy = 30;
     }
     
-    window.parent?.postMessage(
-      {
-        type: 'movePlayer',
-        data: {
-          playerPosition: newPosition,
-          playerEnergy: currentEnergy
-        }
-      },
-      '*'
-    );
+    // Don't allow movement if no energy left (except for initial positioning)
+    if (currentEnergy <= 0 && !arePositionsEqual(newPosition, oldPosition) && !isInitialPosition) {
+      return;
+    }
+    
+    // For initial position, we need to clean up even though there's no currentHandlers yet
+    if (isInitialPosition) {
+      cleanupPosition(oldPosition, {
+        playerMouseover: null,
+        playerMouseout: null,
+        playerClick: null,
+        availableMoveClick: null,
+        ringSquareHandlers: new Map()
+      });
+      isInitialPosition = false;
+    }
+    
+    // Clean up old handlers if they exist
+    if (currentHandlers) {
+      cleanupPosition(oldPosition, currentHandlers);
+    }
+    
+    // Initialize new position and store new handlers
+    currentHandlers = initPlayer(newPosition, oldPosition);
+    
+    // Only update energy and notify parent if this was triggered by user interaction
+    // and the position actually changed
+    if (!arePositionsEqual(newPosition, oldPosition)) {
+      if (!isInitialPosition) {
+        handleLeaveSquare(oldPosition)
+        handleEnterSquare(newPosition);
+      }
+      
+      // Add visual processing indicator
+      const overlay = document.createElement('div');
+      overlay.className = 'move-processing-overlay';
+      document.body.appendChild(overlay);
+      
+      // Post message and wait for response
+      await new Promise((resolve) => {
+        const messageHandler = (ev) => {
+          const {type, data} = ev.data;
+          if (type === 'devvit-message' &&
+            data.message.type === 'movePlayer' &&
+            arePositionsEqual(data.message.data.playerPosition, newPosition)) {
+            window.removeEventListener('message', messageHandler);
+            resolve();
+          }
+        };
+        
+        window.addEventListener('message', messageHandler);
+        
+        window.parent?.postMessage(
+          {
+            type: 'movePlayer',
+            data: {
+              playerPosition: newPosition,
+              playerEnergy: currentEnergy,
+              visitedSquares: Array.from(visitedSquares),
+            }
+          },
+          '*'
+        );
+      });
+      
+      // Remove processing indicator
+      document.querySelector('.move-processing-overlay')?.remove();
+    }
+    
+    currentPosition = newPosition;
+  } finally {
+    isProcessingMove = false;
   }
-  
-  currentPosition = newPosition;
 };
 
 class App {
   constructor() {
-    // const output = document.querySelector('#messageOutput');
-    const increaseButton = document.querySelector('#btn-increase');
-    const decreaseButton = document.querySelector('#btn-decrease');
-    const usernameLabel = document.querySelector('#username');
+    const citrusButton = document.querySelector('#btn-increase');
     const playerScore = document.querySelector('#player-score');
     const playerEnergy = document.querySelector('#player-energy');
     
@@ -338,16 +433,17 @@ class App {
             currentCounter,
             playerPosition,
             playerEnergy: redisPlayerEnergy,
-            gameMap
+            gameMap,
+            visitedSquares: redisVisitedSquares
           } = message.data;
           
           // Store game map
           currentGameMap = gameMap;
+          visitedSquares = new Set(redisVisitedSquares || []);
           
           // Update map display
           updateMapDisplay();
           
-          usernameLabel.innerText = 'u/' + username;
           playerScore.innerText = counter = currentCounter;
           
           // Set initial energy from stored value (convert to number to be safe)
@@ -375,15 +471,8 @@ class App {
         
         if (message.type === 'movePlayer') {
           const {playerPosition, playerEnergy: newEnergy} = message.data;
+          
           currentEnergy = newEnergy;
-          if (playerEnergy) {
-            playerEnergy.innerText = currentEnergy;
-            if (currentEnergy < 30) {
-              playerEnergy.classList.add('red-text');
-            } else {
-              playerEnergy.classList.remove('red-text');
-            }
-          }
           
           if ((currentEnergy > 0 || arePositionsEqual(currentPosition, playerPosition)) &&
             playerPosition &&
@@ -400,18 +489,10 @@ class App {
       }
     });
     
-    increaseButton.addEventListener('click', () => {
+    citrusButton.addEventListener('click', () => {
       // Sends a message to the Devvit app
       window.parent?.postMessage(
-        {type: 'setCounter', data: {newCounter: Number(counter + 1), playerEnergy: 30}},
-        '*'
-      );
-    });
-    
-    decreaseButton.addEventListener('click', () => {
-      // Sends a message to the Devvit app
-      window.parent?.postMessage(
-        {type: 'setCounter', data: {newCounter: Number(counter - 1)}},
+        {type: 'setCounter', data: {newCounter: Number(counter + 1), playerEnergy: 30, visitedSquares: []}},
         '*'
       );
     });
