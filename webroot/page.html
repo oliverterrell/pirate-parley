@@ -20,9 +20,9 @@
         <div></div>
       </div>
       <div class="top-hud-container jetbrains-mono-text">
-        <div class="time-box"><div class="hud-text">04m 20s</div></div>
-        <div class="energy-box"><div class="hud-text">🍗: <span id="player-energy">x</span>/30</div></div>
-        <div class="score-box"><div class="hud-text"><span id="player-score">69</span>pts</div></div>
+        <div class="time-box"><div class="hud-text"><span id="player-time">00m 00s</span></div></div>
+        <div class="energy-box"><div class="hud-text">🍗: <span id="player-energy"></span>/30</div></div>
+        <div class="score-box"><div class="hud-text"><span id="player-score">0</span>pts</div></div>
       </div>
       <div class="grid-cell" data-position="0,0"></div>
       <div class="grid-cell" data-position="0,1"></div>
@@ -202,9 +202,18 @@
       </div>
     </div>
   </div>
+  <div id="how-to-play-modal" class="modal hidden">
+    <div class="how-to-play-dialog">
+      <div class="how-to-play-header">
+        <div id="how-to-play-x-button" class="jersey">X</div>
+        <div class="how-to-play-title jacquard">How to Play</div>
+      </div>
+    </div>
+  </div>
   <div>
     <div class="button-container">
       <button id="btn-increase">Citrus 🍋️</button>
+      <button id="btn-how-to-play">Scroll 📜</button>
     </div>
     <script type="application/javascript" src="script.js"></script>
   </div>

@@ -489,12 +489,25 @@ class App {
       }
     });
     
+    //dev use
     citrusButton.addEventListener('click', () => {
       // Sends a message to the Devvit app
       window.parent?.postMessage(
         {type: 'setCounter', data: {newCounter: Number(counter + 1), playerEnergy: 30, visitedSquares: []}},
         '*'
       );
+    });
+    
+    // How to Play
+    const openModalBtn = document.getElementById('btn-how-to-play');
+    openModalBtn.addEventListener('click', () => {
+      const modal = document.getElementById('how-to-play-modal');
+      modal.classList.remove('hidden');
+      
+      const closeModalBtn = document.getElementById('how-to-play-x-button');
+      closeModalBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
     });
   }
 }

@@ -183,7 +183,7 @@ body {
 .no-energy {
   animation: shake 0.5s;
   background-color: rgba(255, 0, 0, 0.2) !important;
-  border: none;
+  border-color: transparent;
 }
 
 @keyframes shake {
@@ -237,6 +237,40 @@ h3 {
 #counter {
   color: var(--accent-color);
   font-weight: 600;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.hidden {
+  display: none;
+}
+.how-to-play-dialog {
+  position: relative;
+  margin: -0.25rem auto;
+  width: 90%;
+  background-color: #FBE289;
+  color: black;
+}
+.how-to-play-header {
+  position: relative;
+  text-align: center;
+}
+.how-to-play-title {
+  font-size: 40px;
+  margin: 15px 0;
+}
+#how-to-play-x-button {
+  position: absolute;
+  cursor: pointer;
+  padding-left: 15px;
+  font-size: 40px;
 }
 
 /* New button container */
