@@ -2,7 +2,7 @@ import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
 import { DateManager } from './DateManager.js';
-import { aargh_1 } from './games/1_aargh.js';
+import * as games from './games/1_aargh.js';
 import { Welcome } from "./Welcome.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
@@ -15,6 +15,7 @@ type WebViewMessage =
     playerPosition: { row: number, col: number },
     playerEnergy: number;
     gameMap: { [key: string]: { [key: string]: string } },
+    wordLength: number;
     visitedSquares: string[]
   };
 }
@@ -40,10 +41,37 @@ Devvit.configure({
   redis: true,
 });
 
+
 Devvit.addSchedulerJob({
-  name: 'new-day', // you can use an arbitrary name here
+  name: 'new-day',
   onRun: async (event, context) => {
-    // do stuff when the job is executed
+    const dayNumberKey = `day`;
+    const dayNumber = await context.redis.get(dayNumberKey);
+    const currentDay = Number(dayNumber || 0);
+    
+    await context.redis.set(dayNumberKey, (currentDay + 1).toString());
+    
+    const currentDateString = DateManager.getCurrentDateString();
+    const gameKey = `game:${currentDateString}`;
+    
+    const gameData = Object.values(games)[currentDay % Object.values(games).length];
+    if (gameData) {
+      await context.redis.set(gameKey, JSON.stringify(gameData));
+    } else {
+      await context.redis.set(gameKey, JSON.stringify(games.aargh_1));
+    }
+  }
+});
+
+Devvit.addMenuItem({
+  label: 'Run new day auto-update',
+  location: 'subreddit',
+  forUserType: 'moderator',
+  onPress: async (event, context) => {
+    const jobId = await context.scheduler.runJob({
+      name: 'new-day',
+      cron: '0 11 * * *',
+    });
   },
 });
 
@@ -52,7 +80,6 @@ Devvit.addCustomPostType({
   name: "Pirate's Parley",
   height: 'tall',
   render: (context) => {
-    
     // Load username with `useAsync` hook
     const [username] = useState(async () => {
       const currUser = await context.reddit.getCurrentUser();
@@ -60,10 +87,15 @@ Devvit.addCustomPostType({
     });
     
     const currentDateString = DateManager.getCurrentDateString();
+    const gameKey = `game:${currentDateString}`;
     const positionKey = `position:${currentDateString}:${username}`;
     const energyKey = `energy:${currentDateString}:${username}`;
     const visitedSquaresKey = `visited:${currentDateString}:${username}`;
     
+    const [game] = useState(async () => {
+      const game = await context.redis.get(gameKey);
+      return game ? JSON.parse(game) : games.aargh_1;
+    });
     
     const [playerPosition, setPlayerPosition] = useState(async () => {
       const playerPosition = await context.redis.get(positionKey);
@@ -148,7 +180,8 @@ Devvit.addCustomPostType({
           currentCounter: counter,
           playerPosition,
           playerEnergy: Number(playerEnergy),
-          gameMap: aargh_1,
+          gameMap: game.board,
+          wordLength: game.word.length,
           visitedSquares
         },
       });

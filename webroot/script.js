@@ -214,15 +214,23 @@ let currentEnergy = null;
 let currentGameMap = null;
 let visitedSquares = null;
 let isProcessingMove = false;
+let wordLength = null;
 
 const updateMapDisplay = () => {
-  if (!currentGameMap) return;
+  if (!currentGameMap || !wordLength) return;
+  
+  let solveTiles = ``;
+  for (let i = 0; i < wordLength; i++) {
+    solveTiles += `<div class="solve-tile jersey" data-letter-num="${i + 1}">M</div>`;
+  }
+  
+  document.getElementById('solve-tiles-container').innerHTML = solveTiles;
   
   // Clear existing map items
   document.querySelectorAll('.map-item').forEach(item => item.remove());
   
   // Loop through the board and add items
-  Object.entries(currentGameMap.board).forEach(([row, cols]) => {
+  Object.entries(currentGameMap).forEach(([row, cols]) => {
     const rowNum = parseInt(row.substring(1)); // Get number from "r1", "r2" etc
     
     Object.entries(cols).forEach(([col, item]) => {
@@ -235,7 +243,7 @@ const updateMapDisplay = () => {
         itemElement.classList.add('map-item', `map-item-${item}`);
         
         // Add appropriate image or content based on item type
-        switch(item) {
+        switch (item) {
           case 'bush':
             itemElement.innerHTML = '<img src="assets/bush.png" alt="bush" width="29" height="29" />';
             break;
@@ -263,14 +271,14 @@ const updateMapDisplay = () => {
   });
 };
 const handleLeaveSquare = (position) => {
-  if ((currentGameMap.board?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
+  if ((currentGameMap?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
     const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
     square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
   }
 }
 
 const handleEnterSquare = (position) => {
-  const squareType = currentGameMap.board?.['r' + position.row]?.['c' + position.col] ?? null;
+  const squareType = currentGameMap?.['r' + position.row]?.['c' + position.col] ?? null;
   const playerEnergy = document.querySelector('#player-energy');
   
   console.log(squareType);
@@ -314,7 +322,7 @@ const handleEnterSquare = (position) => {
     playerEnergy.classList.remove('green-text');
     currentEnergy -= 1;
   }
-
+  
   playerEnergy.innerText = currentEnergy;
 }
 
@@ -325,7 +333,7 @@ const movePlayer = async (newPosition, oldPosition) => {
     console.log('Move already processing, ignoring new move request');
     return;
   }
-
+  
   try {
     isProcessingMove = true;
     
@@ -434,10 +442,12 @@ class App {
             playerPosition,
             playerEnergy: redisPlayerEnergy,
             gameMap,
+            wordLength: redisWordLength,
             visitedSquares: redisVisitedSquares
           } = message.data;
           
           // Store game map
+          wordLength = redisWordLength;
           currentGameMap = gameMap;
           visitedSquares = new Set(redisVisitedSquares || []);
           
@@ -461,7 +471,7 @@ class App {
           // Parse stored position
           const position = typeof playerPosition === 'string' ?
             JSON.parse(playerPosition) :
-            (playerPosition || { row: 1, col: 1 });
+            (playerPosition || {row: 1, col: 1});
           
           // Initialize player at stored position
           if (!currentPosition || !arePositionsEqual(currentPosition, position)) {

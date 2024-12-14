@@ -60,8 +60,9 @@
   letter-spacing: 0.05rem;
   line-height: 1.3rem;
   border-radius: 0;
-  z-index: 40;
-  transform: translateZ(100px);
+  z-index: 150 !important;
+  /*transform: translateZ(100px);*/
+  cursor: pointer !important;
 }
 
 body {
@@ -192,20 +193,47 @@ body {
   75% { transform: translateX(5px); }
 }
 
-  .bottom-solve-bar {
-    position: absolute;
-    width: 389px;
-    height: 30px;
-    transform: translateX(30px) translateZ(1px);
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    top: 0;
-    background-color: #ebcaa0;
-    /*z-index: 5;*/
-    isolation: isolate;
-  }
+#solve-tiles-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  /*gap: 3px;*/
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+.solve-tile {
+  position: relative;
+  font-size: 24px;
+  text-align: center;
+  background-color: #E89A60;
+  width: 26px;
+  height: 26px;
+  line-height: 1.5rem;
+  margin: 2px;
+}
+
+.bottom-solve-bar {
+  position: absolute;
+  width: 388px;
+  height: 30px;
+  transform: translateX(30px) translateZ(1px);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  top: 0;
+  background-color: #ebcaa0;
+  isolation: isolate;
+}
+
+.grid-row > .bottom-solve-bar{
+  z-index: 60 !important;
+  border-right: 1px solid white;
+}
 
   #username {
     margin: 5px;
@@ -248,31 +276,94 @@ h3 {
   z-index: 100;
   background-color: rgba(0, 0, 0, 0.3);
 }
+#btn-how-to-play {
+  height: 19px;
+  width: 19px;
+  text-align: center;
+  line-height: 1.3rem;
+  border: 3px solid #BF6A1E;
+  inset: 2px;
+  font-size: 18px;
+  cursor: pointer;
+  position: absolute;
+  z-index: 45;
+}
 .hidden {
   display: none;
 }
 .how-to-play-dialog {
   position: relative;
-  margin: -0.25rem auto;
+  top: 0;
+  margin: 0.75rem auto;
   width: 90%;
   background-color: #FBE289;
   color: black;
+  max-height: 455px;
+  overflow-y: scroll;
 }
 .how-to-play-header {
   position: relative;
   text-align: center;
-}
-.how-to-play-title {
+  padding: 25px 0;
   font-size: 40px;
-  margin: 15px 0;
+}
+
+.how-to-play-body {
+  position: relative;
+  text-align: left;
+  margin: 0 35px;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-bottom: 40px;
 }
 #how-to-play-x-button {
   position: absolute;
   cursor: pointer;
-  padding-left: 15px;
+  padding-left: 35px;
   font-size: 40px;
 }
+.points-earned-table {
+  width: 90%;
+}
+.points-earned-table > div {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
+.legend-key-table > div {
+  min-height: 30px;
+}
+
+.legend-key-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+.legend-key-table > div {
+  display: flex;
+  flex-direction: row;
+}
+
+.legend-key-table > div > div {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+}
+.legend-key-table > div > div:empty {
+  visibility: visible;
+  background-color: transparent;
+  min-height: 15px;
+}
+
+.legend-key-table > div > div img {
+  flex-shrink: 0;
+}
+
+.legend-key-table > div > div span {
+  flex-grow: 1;
+}
 /* New button container */
 .button-container {
   display: flex;
@@ -306,22 +397,6 @@ button:active {
   transform: translateY(0);
 }
 
-#btn-decrease {
-  background-color: var(--primary-color);
-}
-
-pre {
-  background-color: white;
-  padding: 0.75rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  overflow-x: auto;
-  font-family: 'Courier New', Courier, monospace;
-  border: 1px solid #e5e7eb;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
 @media (max-width: 640px) {
   body {
     padding: 0.75rem;
@@ -330,5 +405,36 @@ pre {
 
   h1 {
     font-size: 1.5rem;
+  }
+
+  .how-to-play-dialog {
+    width: 90%;
+  }
+
+  .how-to-play-header {
+    font-size: 35px !important;
+  }
+
+  #how-to-play-x-button {
+    font-size: 35px !important;
+    padding-left: 18px !important;
+  }
+
+  .how-to-play-body {
+    width: 90%;
+    margin: 0 18px;
+    font-size: 12px;
+  }
+
+  .legend-key-table {
+    width: 98%;
+  }
+
+  .legend-key-table > div > div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    max-width: 65px !important;
+    font-size: 8px !important;
   }
 }
