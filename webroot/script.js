@@ -1,3 +1,21 @@
+let isInitialPosition = true;
+let currentHandlers = null;
+let currentPosition = null;
+let currentEnergy = null;
+let currentGameMap = null;
+let visitedSquares = null;
+let isProcessingMove = false;
+let wordLength = null;
+
+const isAvailableMoveSquare = (position) => {
+  return (
+    position.row >= 1 &&
+    position.row <= 8 &&
+    position.col >= 1 &&
+    position.col <= 13 &&
+    currentGameMap?.['r' + position.row]?.['c' + position.col] !== 'water'
+  );
+}
 const findAdjacentSquares = (position) => {
   const ringPositions = [
     {row: position.row - 1, col: position.col - 1},
@@ -20,7 +38,8 @@ const findAdjacentSquares = (position) => {
   
   const ringSquares = [];
   for (let pos of ringPositions) {
-    if (pos.row >= 1 && pos.row <= 8 && pos.col >= 1 && pos.col <= 13) {
+    // filter out impassible squares and edge of map
+    if (isAvailableMoveSquare(pos)) {
       const ringSquare = document.querySelector(`div[data-position="${pos.row},${pos.col}"]`);
       ringSquares.push(ringSquare);
     }
@@ -28,7 +47,8 @@ const findAdjacentSquares = (position) => {
   
   const plusSquares = [];
   for (let pos of plusPositions) {
-    if (pos.row >= 1 && pos.row <= 8 && pos.col >= 1 && pos.col <= 13) {
+    // filter out impassible squares and edge of map
+    if (isAvailableMoveSquare(pos)) {
       const plusSquare = document.querySelector(`div[data-position="${pos.row},${pos.col}"]`);
       plusSquares.push(plusSquare);
     }
@@ -207,15 +227,6 @@ const cleanupPosition = (position, handlers) => {
   });
 };
 
-let isInitialPosition = true;
-let currentHandlers = null;
-let currentPosition = null;
-let currentEnergy = null;
-let currentGameMap = null;
-let visitedSquares = null;
-let isProcessingMove = false;
-let wordLength = null;
-
 const updateMapDisplay = () => {
   if (!currentGameMap || !wordLength) return;
   
@@ -256,6 +267,12 @@ const updateMapDisplay = () => {
           case 'rum':
             itemElement.innerHTML = '<img src="assets/rum.png" alt="rum" width="29" height="29" />';
             break;
+          case 'rock':
+            itemElement.innerHTML = '<img src="assets/rock.png" alt="rock" width="29" height="29" />';
+            break;
+          case 'water':
+            itemElement.innerHTML = '<img src="assets/tile_water.png" alt="water" width="29" height="30"  />';
+            break;
           default:
             break;
         }
@@ -270,13 +287,13 @@ const updateMapDisplay = () => {
     });
   });
 };
+
 const handleLeaveSquare = (position) => {
   if ((currentGameMap?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
     const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
     square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
   }
 }
-
 const handleEnterSquare = (position) => {
   const squareType = currentGameMap?.['r' + position.row]?.['c' + position.col] ?? null;
   const playerEnergy = document.querySelector('#player-energy');
@@ -311,6 +328,8 @@ const handleEnterSquare = (position) => {
         playerEnergy.classList.remove('green-text');
         currentEnergy -= 3;
         break;
+      case 'water':
+        break;
       default:
         playerEnergy.classList.add('red-text');
         playerEnergy.classList.remove('green-text');
@@ -326,7 +345,6 @@ const handleEnterSquare = (position) => {
   playerEnergy.innerText = currentEnergy;
 }
 
-// Update the movePlayer function:
 const movePlayer = async (newPosition, oldPosition) => {
   // Don't process new moves if we're already processing one
   if (isProcessingMove) {
@@ -419,7 +437,6 @@ const movePlayer = async (newPosition, oldPosition) => {
 
 class App {
   constructor() {
-    const citrusButton = document.querySelector('#btn-increase');
     const playerScore = document.querySelector('#player-score');
     const playerEnergy = document.querySelector('#player-energy');
     
@@ -438,13 +455,37 @@ class App {
           console.log('Initial data received:', message.data);
           const {
             username,
-            currentCounter,
             playerPosition,
             playerEnergy: redisPlayerEnergy,
             gameMap,
             wordLength: redisWordLength,
-            visitedSquares: redisVisitedSquares
+            visitedSquares: redisVisitedSquares,
+            allGames
           } = message.data;
+          
+          //dev use todo remove
+          const buttonContainer = document.querySelector('#button-container');
+          buttonContainer.innerHTML = '';
+          Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+            const gameBtn = document.createElement('button');
+            gameBtn.className = 'btn-game-dev-use';
+            gameBtn.innerHTML = (i + 1) + ' ' + game.word;
+            gameBtn.addEventListener('click', () => {
+              window.parent?.postMessage(
+                {
+                  type: 'reset',
+                  data: {
+                    game,
+                    playerPosition: { row: 1, col: 1 },
+                    playerEnergy: 30,
+                    visitedSquares: []
+                  }
+                },
+                '*'
+              );
+            });
+            buttonContainer.appendChild(gameBtn)
+          })
           
           // Store game map
           wordLength = redisWordLength;
@@ -454,7 +495,7 @@ class App {
           // Update map display
           updateMapDisplay();
           
-          playerScore.innerText = counter = currentCounter;
+          playerScore.innerText = 0;
           
           // Set initial energy from stored value (convert to number to be safe)
           currentEnergy = Number(redisPlayerEnergy);
@@ -490,23 +531,9 @@ class App {
             movePlayer(playerPosition, currentPosition || playerPosition);
           }
         }
-        
-        // Update counter
-        if (message.type === 'updateCounter') {
-          const {currentCounter} = message.data;
-          playerScore.innerText = counter = currentCounter;
-        }
       }
     });
     
-    //dev use
-    citrusButton.addEventListener('click', () => {
-      // Sends a message to the Devvit app
-      window.parent?.postMessage(
-        {type: 'setCounter', data: {newCounter: Number(counter + 1), playerEnergy: 30, visitedSquares: []}},
-        '*'
-      );
-    });
     
     // How to Play
     const openModalBtn = document.getElementById('btn-how-to-play');

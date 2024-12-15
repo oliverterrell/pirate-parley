@@ -2,7 +2,7 @@ import { Devvit } from "@devvit/public-api";
 import moment from 'moment'
 
 //import ranking data, pass as props
-export const Welcome = ({webviewVisible, counter, username, onShowWebviewClick}) => {
+export const Welcome = ({webviewVisible, username, onShowWebviewClick}) => {
   return (
     <vstack
       grow={!webviewVisible}

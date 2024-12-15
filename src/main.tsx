@@ -2,7 +2,7 @@ import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
 import { DateManager } from './DateManager.js';
-import * as games from './games/1_aargh.js';
+import * as games from './gameDict.js';
 import { Welcome } from "./Welcome.js"
 
 // Defines the messages that are exchanged between Devvit and Web View
@@ -16,7 +16,8 @@ type WebViewMessage =
     playerEnergy: number;
     gameMap: { [key: string]: { [key: string]: string } },
     wordLength: number;
-    visitedSquares: string[]
+    visitedSquares: string[];
+    allGames: Record<string, any>
   };
 }
   | {
@@ -28,12 +29,13 @@ type WebViewMessage =
   };
 }
   | {
-  type: 'setCounter';
-  data: { newCounter: number, playerEnergy: number, visitedSquares: string[] };
-}
-  | {
-  type: 'updateCounter';
-  data: { currentCounter: number };
+  type: 'reset';
+  data: {
+    game: Record<string, any>,
+    playerPosition: { row: number, col: number },
+    playerEnergy: number,
+    visitedSquares: string[]
+  };
 };
 
 Devvit.configure({
@@ -112,34 +114,32 @@ Devvit.addCustomPostType({
       return visitedSquares ? visitedSquares.split('|') : [];
     })
     
-    // Load latest counter from redis with `useAsync` hook
-    const [counter, setCounter] = useState(async () => {
-      const redisCount = await context.redis.get(`counter_${context.postId}`);
-      return Number(redisCount ?? 0);
-    });
-    
     const [webviewVisible, setWebviewVisible] = useState(false);
     
     // When the web view invokes `window.parent.postMessage` this function is called
     const onMessage = async (msg: WebViewMessage) => {
       switch (msg.type) {
-        case 'setCounter':
-          console.log("set counter message")
-          await context.redis.set(`counter_${context.postId}`, msg.data.newCounter.toString());
+        case 'reset':
+          console.log("reset game state")
+          await context.redis.set(positionKey, JSON.stringify(msg.data.playerPosition));
           await context.redis.set(energyKey, msg.data.playerEnergy.toString());
           await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'));
           
           context.ui.webView.postMessage('myWebView', {
-            type: 'updateCounter',
+            type: 'initialData',
             data: {
-              currentCounter: msg.data.newCounter,
               playerEnergy: msg.data.playerEnergy,
-              visitedSquares: msg.data.visitedSquares
+              visitedSquares: msg.data.visitedSquares,
+              playerPosition: msg.data.playerPosition,
+              gameMap: msg.data.game.board,
+              wordLength: msg.data.game.word.length,
+              allGames: games
             },
           });
-          setCounter(msg.data.newCounter);
+          
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
+          setPlayerPosition(msg.data.playerPosition)
           break;
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
@@ -156,12 +156,12 @@ Devvit.addCustomPostType({
               visitedSquares: msg.data.visitedSquares
             },
           });
+          
           setPlayerPosition(msg.data.playerPosition);
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
           break;
         case 'initialData':
-        case 'updateCounter':
           console.log(`${msg.type} message received`)
           break;
         
@@ -177,12 +177,12 @@ Devvit.addCustomPostType({
         type: 'initialData',
         data: {
           username: username,
-          currentCounter: counter,
           playerPosition,
           playerEnergy: Number(playerEnergy),
           gameMap: game.board,
           wordLength: game.word.length,
-          visitedSquares
+          visitedSquares,
+          allGames: games
         },
       });
     };
@@ -192,7 +192,6 @@ Devvit.addCustomPostType({
       <vstack grow padding="small">
         <Welcome
           webviewVisible={webviewVisible}
-          counter={counter}
           username={username}
           onShowWebviewClick={onShowWebviewClick}
         />
