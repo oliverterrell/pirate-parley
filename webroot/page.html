@@ -1,273 +1,338 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta charset="UTF-8" />
-    <title>Pirate's Parley</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-  <div class="grid-container">
-    <div class="land-background"></div>
-    <div class="grid-row">
-      <div class="top-hud-backgrounds">
-        <div></div>
-        <div></div>
-        <div></div>
+<head>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8"/>
+  <title>Pirate's Parley</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="grid-container">
+  <div class="land-background"></div>
+  <div class="grid-row">
+    <div class="top-hud-backgrounds">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div class="top-hud-container jetbrains-mono-text">
+      <div class="time-box">
+        <div class="hud-text"><span id="player-time">00m 00s</span></div>
       </div>
-      <div class="top-hud-container jetbrains-mono-text">
-        <div class="time-box"><div class="hud-text"><span id="player-time">00m 00s</span></div></div>
-        <div class="energy-box"><div class="hud-text">🍗: <span id="player-energy"></span>/30</div></div>
-        <div class="score-box"><div class="hud-text"><span id="player-score">0</span>pts</div></div>
+      <div class="energy-box">
+        <div class="hud-text">🍗: <span id="player-energy"></span>/30</div>
       </div>
-      <div class="grid-cell" data-position="0,0"></div>
-      <div class="grid-cell" data-position="0,1"></div>
-      <div class="grid-cell" data-position="0,2"></div>
-      <div class="grid-cell" data-position="0,3"></div>
-      <div class="grid-cell" data-position="0,4"></div>
-      <div class="grid-cell" data-position="0,5"></div>
-      <div class="grid-cell" data-position="0,6"></div>
-      <div class="grid-cell" data-position="0,7"></div>
-      <div class="grid-cell" data-position="0,8"></div>
-      <div class="grid-cell" data-position="0,9"></div>
-      <div class="grid-cell" data-position="0,10"></div>
-      <div class="grid-cell" data-position="0,11"></div>
-      <div class="grid-cell" data-position="0,12"></div>
-      <div class="grid-cell" data-position="0,13"></div>
-      <div class="grid-cell" data-position="0,14"></div>
-    </div>
-    
-    <div class="grid-row">
-      <div class="grid-cell" data-position="1,0"></div>
-      <div class="grid-cell" data-position="1,1"></div>
-      <div class="grid-cell" data-position="1,2"></div>
-      <div class="grid-cell" data-position="1,3"></div>
-      <div class="grid-cell" data-position="1,4"></div>
-      <div class="grid-cell" data-position="1,5"></div>
-      <div class="grid-cell" data-position="1,6"></div>
-      <div class="grid-cell" data-position="1,7"></div>
-      <div class="grid-cell" data-position="1,8"></div>
-      <div class="grid-cell" data-position="1,9"></div>
-      <div class="grid-cell" data-position="1,10"></div>
-      <div class="grid-cell" data-position="1,11"></div>
-      <div class="grid-cell" data-position="1,12"></div>
-      <div class="grid-cell" data-position="1,13"></div>
-      <div class="grid-cell" data-position="1,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="2,0"></div>
-      <div class="grid-cell" data-position="2,1"></div>
-      <div class="grid-cell" data-position="2,2"></div>
-      <div class="grid-cell" data-position="2,3"></div>
-      <div class="grid-cell" data-position="2,4"></div>
-      <div class="grid-cell" data-position="2,5"></div>
-      <div class="grid-cell" data-position="2,6"></div>
-      <div class="grid-cell" data-position="2,7"></div>
-      <div class="grid-cell" data-position="2,8"></div>
-      <div class="grid-cell" data-position="2,9"></div>
-      <div class="grid-cell" data-position="2,10"></div>
-      <div class="grid-cell" data-position="2,11"></div>
-      <div class="grid-cell" data-position="2,12"></div>
-      <div class="grid-cell" data-position="2,13"></div>
-      <div class="grid-cell" data-position="2,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="3,0"></div>
-      <div class="grid-cell" data-position="3,1"></div>
-      <div class="grid-cell" data-position="3,2"></div>
-      <div class="grid-cell" data-position="3,3"></div>
-      <div class="grid-cell" data-position="3,4"></div>
-      <div class="grid-cell" data-position="3,5"></div>
-      <div class="grid-cell" data-position="3,6"></div>
-      <div class="grid-cell" data-position="3,7"></div>
-      <div class="grid-cell" data-position="3,8"></div>
-      <div class="grid-cell" data-position="3,9"></div>
-      <div class="grid-cell" data-position="3,10"></div>
-      <div class="grid-cell" data-position="3,11"></div>
-      <div class="grid-cell" data-position="3,12"></div>
-      <div class="grid-cell" data-position="3,13"></div>
-      <div class="grid-cell" data-position="3,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="4,0"></div>
-      <div class="grid-cell" data-position="4,1"></div>
-      <div class="grid-cell" data-position="4,2"></div>
-      <div class="grid-cell" data-position="4,3"></div>
-      <div class="grid-cell" data-position="4,4"></div>
-      <div class="grid-cell" data-position="4,5"></div>
-      <div class="grid-cell" data-position="4,6"></div>
-      <div class="grid-cell" data-position="4,7"></div>
-      <div class="grid-cell" data-position="4,8"></div>
-      <div class="grid-cell" data-position="4,9"></div>
-      <div class="grid-cell" data-position="4,10"></div>
-      <div class="grid-cell" data-position="4,11"></div>
-      <div class="grid-cell" data-position="4,12"></div>
-      <div class="grid-cell" data-position="4,13"></div>
-      <div class="grid-cell" data-position="4,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="5,0"></div>
-      <div class="grid-cell" data-position="5,1"></div>
-      <div class="grid-cell" data-position="5,2"></div>
-      <div class="grid-cell" data-position="5,3"></div>
-      <div class="grid-cell" data-position="5,4"></div>
-      <div class="grid-cell" data-position="5,5"></div>
-      <div class="grid-cell" data-position="5,6"></div>
-      <div class="grid-cell" data-position="5,7"></div>
-      <div class="grid-cell" data-position="5,8"></div>
-      <div class="grid-cell" data-position="5,9"></div>
-      <div class="grid-cell" data-position="5,10"></div>
-      <div class="grid-cell" data-position="5,11"></div>
-      <div class="grid-cell" data-position="5,12"></div>
-      <div class="grid-cell" data-position="5,13"></div>
-      <div class="grid-cell" data-position="5,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="6,0"></div>
-      <div class="grid-cell" data-position="6,1"></div>
-      <div class="grid-cell" data-position="6,2"></div>
-      <div class="grid-cell" data-position="6,3"></div>
-      <div class="grid-cell" data-position="6,4"></div>
-      <div class="grid-cell" data-position="6,5"></div>
-      <div class="grid-cell" data-position="6,6"></div>
-      <div class="grid-cell" data-position="6,7"></div>
-      <div class="grid-cell" data-position="6,8"></div>
-      <div class="grid-cell" data-position="6,9"></div>
-      <div class="grid-cell" data-position="6,10"></div>
-      <div class="grid-cell" data-position="6,11"></div>
-      <div class="grid-cell" data-position="6,12"></div>
-      <div class="grid-cell" data-position="6,13"></div>
-      <div class="grid-cell" data-position="6,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="7,0"></div>
-      <div class="grid-cell" data-position="7,1"></div>
-      <div class="grid-cell" data-position="7,2"></div>
-      <div class="grid-cell" data-position="7,3"></div>
-      <div class="grid-cell" data-position="7,4"></div>
-      <div class="grid-cell" data-position="7,5"></div>
-      <div class="grid-cell" data-position="7,6"></div>
-      <div class="grid-cell" data-position="7,7"></div>
-      <div class="grid-cell" data-position="7,8"></div>
-      <div class="grid-cell" data-position="7,9"></div>
-      <div class="grid-cell" data-position="7,10"></div>
-      <div class="grid-cell" data-position="7,11"></div>
-      <div class="grid-cell" data-position="7,12"></div>
-      <div class="grid-cell" data-position="7,13"></div>
-      <div class="grid-cell" data-position="7,14"></div>
-    </div>
-    <div class="grid-row">
-      <div class="grid-cell" data-position="8,0"></div>
-      <div class="grid-cell" data-position="8,1"></div>
-      <div class="grid-cell" data-position="8,2"></div>
-      <div class="grid-cell" data-position="8,3"></div>
-      <div class="grid-cell" data-position="8,4"></div>
-      <div class="grid-cell" data-position="8,5"></div>
-      <div class="grid-cell" data-position="8,6"></div>
-      <div class="grid-cell" data-position="8,7"></div>
-      <div class="grid-cell" data-position="8,8"></div>
-      <div class="grid-cell" data-position="8,9"></div>
-      <div class="grid-cell" data-position="8,10"></div>
-      <div class="grid-cell" data-position="8,11"></div>
-      <div class="grid-cell" data-position="8,12"></div>
-      <div class="grid-cell" data-position="8,13"></div>
-      <div class="grid-cell" data-position="8,14"></div>
-    </div>
-    
-    
-    <div class="grid-row">
-      <div class="grid-cell" data-position="9,0"></div>
-      <div class="grid-cell" data-position="9,1"></div>
-      <div class="grid-cell" data-position="9,2"></div>
-      <div class="grid-cell" data-position="9,3"></div>
-      <div class="grid-cell" data-position="9,4"></div>
-      <div class="grid-cell" data-position="9,5"></div>
-      <div class="grid-cell" data-position="9,6"></div>
-      <div class="grid-cell" data-position="9,7"></div>
-      <div class="grid-cell" data-position="9,8"></div>
-      <div class="grid-cell" data-position="9,9"></div>
-      <div class="grid-cell" data-position="9,10"></div>
-      <div class="grid-cell" data-position="9,11"></div>
-      <div class="grid-cell" data-position="9,12"></div>
-      <div class="grid-cell" data-position="9,13"></div>
-      <div class="grid-cell" data-position="9,14"></div>
-      <div class="bottom-solve-bar">
-        <div class="bottom-solve-bar-border-effect"></div>
-        <div id="btn-how-to-play" class="jersey">?</div>
-        <div id="solve-tiles-container"></div>
-        <div id="solve-button" class="solve-button jersey">solve</div>
+      <div class="score-box">
+        <div class="hud-text"><span id="player-score">0</span>pts</div>
       </div>
+    </div>
+    <div class="grid-cell" data-position="0,0"></div>
+    <div class="grid-cell" data-position="0,1"></div>
+    <div class="grid-cell" data-position="0,2"></div>
+    <div class="grid-cell" data-position="0,3"></div>
+    <div class="grid-cell" data-position="0,4"></div>
+    <div class="grid-cell" data-position="0,5"></div>
+    <div class="grid-cell" data-position="0,6"></div>
+    <div class="grid-cell" data-position="0,7"></div>
+    <div class="grid-cell" data-position="0,8"></div>
+    <div class="grid-cell" data-position="0,9"></div>
+    <div class="grid-cell" data-position="0,10"></div>
+    <div class="grid-cell" data-position="0,11"></div>
+    <div class="grid-cell" data-position="0,12"></div>
+    <div class="grid-cell" data-position="0,13"></div>
+    <div class="grid-cell" data-position="0,14"></div>
+  </div>
+  
+  <div class="grid-row">
+    <div class="grid-cell" data-position="1,0"></div>
+    <div class="grid-cell" data-position="1,1"></div>
+    <div class="grid-cell" data-position="1,2"></div>
+    <div class="grid-cell" data-position="1,3"></div>
+    <div class="grid-cell" data-position="1,4"></div>
+    <div class="grid-cell" data-position="1,5"></div>
+    <div class="grid-cell" data-position="1,6"></div>
+    <div class="grid-cell" data-position="1,7"></div>
+    <div class="grid-cell" data-position="1,8"></div>
+    <div class="grid-cell" data-position="1,9"></div>
+    <div class="grid-cell" data-position="1,10"></div>
+    <div class="grid-cell" data-position="1,11"></div>
+    <div class="grid-cell" data-position="1,12"></div>
+    <div class="grid-cell" data-position="1,13"></div>
+    <div class="grid-cell" data-position="1,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="2,0"></div>
+    <div class="grid-cell" data-position="2,1"></div>
+    <div class="grid-cell" data-position="2,2"></div>
+    <div class="grid-cell" data-position="2,3"></div>
+    <div class="grid-cell" data-position="2,4"></div>
+    <div class="grid-cell" data-position="2,5"></div>
+    <div class="grid-cell" data-position="2,6"></div>
+    <div class="grid-cell" data-position="2,7"></div>
+    <div class="grid-cell" data-position="2,8"></div>
+    <div class="grid-cell" data-position="2,9"></div>
+    <div class="grid-cell" data-position="2,10"></div>
+    <div class="grid-cell" data-position="2,11"></div>
+    <div class="grid-cell" data-position="2,12"></div>
+    <div class="grid-cell" data-position="2,13"></div>
+    <div class="grid-cell" data-position="2,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="3,0"></div>
+    <div class="grid-cell" data-position="3,1"></div>
+    <div class="grid-cell" data-position="3,2"></div>
+    <div class="grid-cell" data-position="3,3"></div>
+    <div class="grid-cell" data-position="3,4"></div>
+    <div class="grid-cell" data-position="3,5"></div>
+    <div class="grid-cell" data-position="3,6"></div>
+    <div class="grid-cell" data-position="3,7"></div>
+    <div class="grid-cell" data-position="3,8"></div>
+    <div class="grid-cell" data-position="3,9"></div>
+    <div class="grid-cell" data-position="3,10"></div>
+    <div class="grid-cell" data-position="3,11"></div>
+    <div class="grid-cell" data-position="3,12"></div>
+    <div class="grid-cell" data-position="3,13"></div>
+    <div class="grid-cell" data-position="3,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="4,0"></div>
+    <div class="grid-cell" data-position="4,1"></div>
+    <div class="grid-cell" data-position="4,2"></div>
+    <div class="grid-cell" data-position="4,3"></div>
+    <div class="grid-cell" data-position="4,4"></div>
+    <div class="grid-cell" data-position="4,5"></div>
+    <div class="grid-cell" data-position="4,6"></div>
+    <div class="grid-cell" data-position="4,7"></div>
+    <div class="grid-cell" data-position="4,8"></div>
+    <div class="grid-cell" data-position="4,9"></div>
+    <div class="grid-cell" data-position="4,10"></div>
+    <div class="grid-cell" data-position="4,11"></div>
+    <div class="grid-cell" data-position="4,12"></div>
+    <div class="grid-cell" data-position="4,13"></div>
+    <div class="grid-cell" data-position="4,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="5,0"></div>
+    <div class="grid-cell" data-position="5,1"></div>
+    <div class="grid-cell" data-position="5,2"></div>
+    <div class="grid-cell" data-position="5,3"></div>
+    <div class="grid-cell" data-position="5,4"></div>
+    <div class="grid-cell" data-position="5,5"></div>
+    <div class="grid-cell" data-position="5,6"></div>
+    <div class="grid-cell" data-position="5,7"></div>
+    <div class="grid-cell" data-position="5,8"></div>
+    <div class="grid-cell" data-position="5,9"></div>
+    <div class="grid-cell" data-position="5,10"></div>
+    <div class="grid-cell" data-position="5,11"></div>
+    <div class="grid-cell" data-position="5,12"></div>
+    <div class="grid-cell" data-position="5,13"></div>
+    <div class="grid-cell" data-position="5,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="6,0"></div>
+    <div class="grid-cell" data-position="6,1"></div>
+    <div class="grid-cell" data-position="6,2"></div>
+    <div class="grid-cell" data-position="6,3"></div>
+    <div class="grid-cell" data-position="6,4"></div>
+    <div class="grid-cell" data-position="6,5"></div>
+    <div class="grid-cell" data-position="6,6"></div>
+    <div class="grid-cell" data-position="6,7"></div>
+    <div class="grid-cell" data-position="6,8"></div>
+    <div class="grid-cell" data-position="6,9"></div>
+    <div class="grid-cell" data-position="6,10"></div>
+    <div class="grid-cell" data-position="6,11"></div>
+    <div class="grid-cell" data-position="6,12"></div>
+    <div class="grid-cell" data-position="6,13"></div>
+    <div class="grid-cell" data-position="6,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="7,0"></div>
+    <div class="grid-cell" data-position="7,1"></div>
+    <div class="grid-cell" data-position="7,2"></div>
+    <div class="grid-cell" data-position="7,3"></div>
+    <div class="grid-cell" data-position="7,4"></div>
+    <div class="grid-cell" data-position="7,5"></div>
+    <div class="grid-cell" data-position="7,6"></div>
+    <div class="grid-cell" data-position="7,7"></div>
+    <div class="grid-cell" data-position="7,8"></div>
+    <div class="grid-cell" data-position="7,9"></div>
+    <div class="grid-cell" data-position="7,10"></div>
+    <div class="grid-cell" data-position="7,11"></div>
+    <div class="grid-cell" data-position="7,12"></div>
+    <div class="grid-cell" data-position="7,13"></div>
+    <div class="grid-cell" data-position="7,14"></div>
+  </div>
+  <div class="grid-row">
+    <div class="grid-cell" data-position="8,0"></div>
+    <div class="grid-cell" data-position="8,1"></div>
+    <div class="grid-cell" data-position="8,2"></div>
+    <div class="grid-cell" data-position="8,3"></div>
+    <div class="grid-cell" data-position="8,4"></div>
+    <div class="grid-cell" data-position="8,5"></div>
+    <div class="grid-cell" data-position="8,6"></div>
+    <div class="grid-cell" data-position="8,7"></div>
+    <div class="grid-cell" data-position="8,8"></div>
+    <div class="grid-cell" data-position="8,9"></div>
+    <div class="grid-cell" data-position="8,10"></div>
+    <div class="grid-cell" data-position="8,11"></div>
+    <div class="grid-cell" data-position="8,12"></div>
+    <div class="grid-cell" data-position="8,13"></div>
+    <div class="grid-cell" data-position="8,14"></div>
+  </div>
+  
+  
+  <div class="grid-row">
+    <div class="grid-cell" data-position="9,0"></div>
+    <div class="grid-cell" data-position="9,1"></div>
+    <div class="grid-cell" data-position="9,2"></div>
+    <div class="grid-cell" data-position="9,3"></div>
+    <div class="grid-cell" data-position="9,4"></div>
+    <div class="grid-cell" data-position="9,5"></div>
+    <div class="grid-cell" data-position="9,6"></div>
+    <div class="grid-cell" data-position="9,7"></div>
+    <div class="grid-cell" data-position="9,8"></div>
+    <div class="grid-cell" data-position="9,9"></div>
+    <div class="grid-cell" data-position="9,10"></div>
+    <div class="grid-cell" data-position="9,11"></div>
+    <div class="grid-cell" data-position="9,12"></div>
+    <div class="grid-cell" data-position="9,13"></div>
+    <div class="grid-cell" data-position="9,14"></div>
+    <div class="bottom-solve-bar">
+      <div class="bottom-solve-bar-border-effect"></div>
+      <div id="btn-how-to-play" class="jersey">?</div>
+      <div id="solve-tiles-container"></div>
+      <div id="solve-button" class="solve-button jersey">solve</div>
     </div>
   </div>
-  <div id="how-to-play-modal" class="modal hidden">
-    <div class="how-to-play-dialog">
-      <div class="how-to-play-header">
-        <div id="how-to-play-x-button" class="jersey">X</div>
-        <div class="how-to-play-title jacquard">How to Play</div>
+</div>
+<div id="how-to-play-modal" class="modal dimmed-bg hidden">
+  <div class="how-to-play-dialog">
+    <div class="how-to-play-header">
+      <div id="how-to-play-x-button" class="jersey">X</div>
+      <div class="how-to-play-title jacquard">How to Play</div>
+    </div>
+    <div class="how-to-play-body jetbrains-mono-text">
+      <strong>Objective:</strong><br/>
+      Find the mystery word by digging around the island. Be the top pirate each day by solving
+      the word faster than any other scumbags.<br/><br/>
+      
+      <strong>Moving around the Board:</strong><br>
+      Select the cell where you want to move to. You can move up, down, left, and right by clicking around the map.
+      Find the shortest way to your desired location.<br/><br/>
+      
+      <strong>Energy:</strong><br/>
+      Each move costs 1 unit of energy. Removing obstacles costs units of energy. Removing rocks costs 2 units of
+      energy.
+      You can find energy boosts on the map. Running out of energy will end the game.<br/><br/>
+      
+      <strong>Points Earned:</strong><br/>
+      <div class="points-earned-table">
+        <div>
+          <div>Correct Letter</div>
+          <div>+10</div>
+        </div>
+        <div>
+          <div>Puzzle Solve (<10m)</div>
+          <div>+20</div>
+        </div>
+        <div>
+          <div>Puzzle Solve (<15m)</div>
+          <div>+50</div>
+        </div>
+        <div>
+          <div>Energy Left</div>
+          <div>+1</div>
+        </div>
       </div>
-      <div class="how-to-play-body jetbrains-mono-text">
-        <strong>Objective:</strong><br/>
-        Find the mystery word by digging around the island. Be the top pirate each day by solving
-        the word faster than any other scumbags.<br/><br/>
-
-        <strong>Moving around the Board:</strong><br>
-        Select the cell where you want to move to. You can move up, down, left, and right by clicking around the map.
-        Find the shortest way to your desired location.<br/><br/>
-
-        <strong>Energy:</strong><br/>
-        Each move costs 1 unit of energy. Removing obstacles costs units of energy. Removing rocks costs 2 units of energy.
-        You can find energy boosts on the map. Running out of energy will end the game.<br/><br/>
-        
-        <strong>Points Earned:</strong><br />
-        <div class="points-earned-table">
-          <div><div>Correct Letter</div><div>+10</div></div>
-          <div><div>Puzzle Solve (<10m)</div><div>+20</div></div>
-          <div><div>Puzzle Solve (<15m)</div><div>+50</div></div>
-          <div><div>Energy Left</div><div>+1</div></div>
-        </div><br/><br/><br/>
-        
-        <strong>Legend Key:</strong>
-        <div class="legend-key-table">
-          <div>
-            <div><img src="assets/icon_player.png" alt="player icon" height="30" width="30">&ensp;<span>Player icon</span></div>
-            <div><img src="assets/bush.png" alt="bush" height="30" width="30">&ensp;<span>Obstacle<br/>Cost: 2 energy</span></div>
-            <div><img src="assets/drumstick.png" alt="drumstick" height="30" width="30">&ensp;<span>Energy x 1</span></div>
+      <br/><br/><br/>
+      
+      <strong>Legend Key:</strong>
+      <div class="legend-key-table">
+        <div>
+          <div><img src="assets/icon_player.png" alt="player icon" height="30" width="30">&ensp;<span>Player icon</span>
           </div>
-          <div>
-            <div></div>
-            <div><img src="assets/rock.png" alt="rock" height="30" width="30">&ensp;<span style="margin-top:5px;">Obstacle<br/>Cost: 3 energy</span></div>
-            <div><img src="assets/rum.png" alt="rum" height="30" width="30">&ensp;<span>Energy x 2</span></div>
+          <div><img src="assets/bush.png" alt="bush" height="30"
+                    width="30">&ensp;<span>Obstacle<br/>Cost: 2 energy</span></div>
+          <div><img src="assets/drumstick.png" alt="drumstick" height="30" width="30">&ensp;<span>Energy x 1</span>
           </div>
-          <div>
-            <div><img src="assets/correct.png" alt="correct letter" height="30" width="30">&ensp;<span>Correct</span></div>
-            <div></div>
-            <div><img src="assets/chest.png" alt="chest" height="30" width="30">&ensp;<span>Letter Chest</span></div>
+        </div>
+        <div>
+          <div></div>
+          <div><img src="assets/rock.png" alt="rock" height="30" width="30">&ensp;<span style="margin-top:5px;">Obstacle<br/>Cost: 3 energy</span>
           </div>
-          <div>
-            <div><img src="assets/wrong.png" alt="wrong letter" height="30" width="30">&ensp;<span>Wrong</span></div>
-            <div></div>
-            <div></div>
+          <div><img src="assets/rum.png" alt="rum" height="30" width="30">&ensp;<span>Energy x 2</span></div>
+        </div>
+        <div>
+          <div><img src="assets/correct.png" alt="correct letter" height="30" width="30">&ensp;<span>Correct</span>
           </div>
-          <div>
-            <div><img src="assets/available.png" alt="available letter" height="30" width="30">&ensp;<span>Available</span></div>
-            <div></div>
-            <div></div>
-          </div>
+          <div></div>
+          <div><img src="assets/chest.png" alt="chest" height="30" width="30">&ensp;<span>Letter Chest</span></div>
+        </div>
+        <div>
+          <div><img src="assets/wrong.png" alt="wrong letter" height="30" width="30">&ensp;<span>Wrong</span></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div>
+          <div><img src="assets/available.png" alt="available letter" height="30"
+                    width="30">&ensp;<span>Available</span></div>
+          <div></div>
+          <div></div>
         </div>
       </div>
     </div>
   </div>
-  <div id="letter-board-modal" class="modal hidden">
-    <div class="letter-board"></div>
-  </div>
-  <div>
-    <div id="button-container" class="button-container">
+</div>
+<div id="letter-board-modal" class="modal hidden">
+  <div class="letter-board-dialog">
+    <div class="letter-board-header">
+      <div id="letter-board-title" class="jacquard"></div>
     </div>
-    <script type="application/javascript" src="script.js"></script>
+    <div class="keyboard-container jersey">
+      <div class="keyboard-row">
+        <div class="key" data-letter="Q">Q</div>
+        <div class="key" data-letter="W">W</div>
+        <div class="key" data-letter="E">E</div>
+        <div class="key" data-letter="R">R</div>
+        <div class="key" data-letter="T">T</div>
+        <div class="key" data-letter="Y">Y</div>
+        <div class="key" data-letter="U">U</div>
+        <div class="key" data-letter="I">I</div>
+        <div class="key" data-letter="O">O</div>
+        <div class="key" data-letter="P">P</div>
+      </div>
+      <div class="keyboard-row">
+        <div class="key" data-letter="A">A</div>
+        <div class="key" data-letter="S">S</div>
+        <div class="key" data-letter="D">D</div>
+        <div class="key" data-letter="F">F</div>
+        <div class="key" data-letter="G">G</div>
+        <div class="key" data-letter="H">H</div>
+        <div class="key" data-letter="J">J</div>
+        <div class="key" data-letter="K">K</div>
+        <div class="key" data-letter="L">L</div>
+      </div>
+      <div class="keyboard-row">
+        <div class="key" data-letter="Z">Z</div>
+        <div class="key" data-letter="X">X</div>
+        <div class="key" data-letter="C">C</div>
+        <div class="key" data-letter="V">V</div>
+        <div class="key" data-letter="B">B</div>
+        <div class="key" data-letter="N">N</div>
+        <div class="key" data-letter="M">M</div>
+      </div>
+    </div>
+    <div id="aye-aye-button" class="aye-aye-button jersey">Aye aye</div>
   </div>
-  </body>
+</div>
+<div>
+  <div id="button-container" class="button-container">
+  </div>
+  <script type="application/javascript" src="script.js"></script>
+</div>
+</body>
 </html>

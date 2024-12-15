@@ -3,9 +3,13 @@ let currentHandlers = null;
 let currentPosition = null;
 let currentEnergy = null;
 let currentGameMap = null;
+let currentScore = 0;
 let visitedSquares = null;
 let isProcessingMove = false;
 let wordLength = null;
+let currentLetter = null;
+let guessedLetters = null;
+let partialWord = null;
 
 const isAvailableMoveSquare = (position) => {
   return (
@@ -227,15 +231,17 @@ const cleanupPosition = (position, handlers) => {
   });
 };
 
-const updateMapDisplay = () => {
-  if (!currentGameMap || !wordLength) return;
-  
+const updateLetterDisplay = () => {
   let solveTiles = ``;
   for (let i = 0; i < wordLength; i++) {
-    solveTiles += `<div class="solve-tile jersey" data-letter-position="${i}"></div>`;
+    solveTiles += `<div class="solve-tile jersey" data-letter-position="${i}">${partialWord.charAt(i) === '_' ? '' : partialWord.charAt(i)}</div>`;
   }
   
   document.getElementById('solve-tiles-container').innerHTML = solveTiles;
+}
+
+const updateMapDisplay = () => {
+  if (!currentGameMap) return;
   
   // Clear existing map items
   document.querySelectorAll('.map-item').forEach(item => item.remove());
@@ -288,6 +294,52 @@ const updateMapDisplay = () => {
   });
 };
 
+const openLetterBoard = () => {
+  const modal = document.getElementById('letter-board-modal');
+  modal.classList.remove('hidden');
+  
+  const ayeAyeBtn = document.getElementById('aye-aye-button');
+  ayeAyeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+}
+const handleChestSquare = () => {
+  const title = document.getElementById('letter-board-title');
+  title.innerHTML = 'Choose wisely';
+  openLetterBoard();
+  
+  document.querySelectorAll('.key').forEach(key => {
+    if (!guessedLetters.includes(key.dataset.letter.toLowerCase())) {
+      key.addEventListener('click', () => {
+        if (currentLetter) {
+          document.querySelector(`div[data-letter="${currentLetter.toUpperCase()}"]`).classList.remove('selected');
+        }
+        currentLetter = key.dataset.letter.toLowerCase();
+        key.classList.add('selected');
+      });
+    }
+  })
+}
+
+const handleAyeAye = () => {
+  if (!currentLetter) return;
+  
+  const newGuessedLetters = guessedLetters;
+  newGuessedLetters.push(currentLetter);
+  
+  window.parent?.postMessage(
+    {
+      type: 'guessLetter',
+      data: {
+        letter: currentLetter,
+        guessedLetters: newGuessedLetters,
+        visitedSquares: Array.from(visitedSquares),
+      }
+    },
+    '*'
+  );
+}
+
 const handleLeaveSquare = (position) => {
   if ((currentGameMap?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
     const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
@@ -307,6 +359,7 @@ const handleEnterSquare = (position) => {
         currentEnergy -= 1;
         playerEnergy.classList.add('red-text');
         playerEnergy.classList.remove('green-text');
+        handleChestSquare();
         break;
       case 'bush':
         playerEnergy.classList.add('red-text');
@@ -344,7 +397,6 @@ const handleEnterSquare = (position) => {
   
   playerEnergy.innerText = currentEnergy;
 }
-
 const movePlayer = async (newPosition, oldPosition) => {
   // Don't process new moves if we're already processing one
   if (isProcessingMove) {
@@ -440,8 +492,6 @@ class App {
     const playerScore = document.querySelector('#player-score');
     const playerEnergy = document.querySelector('#player-energy');
     
-    let counter = 0;
-    
     // When the Devvit app sends a message with `context.ui.webView.postMessage`, this will be triggered
     window.addEventListener('message', (ev) => {
       const {type, data} = ev.data;
@@ -456,14 +506,17 @@ class App {
           const {
             username,
             playerPosition,
+            playerScore: redisPlayerScore,
             playerEnergy: redisPlayerEnergy,
             gameMap,
             wordLength: redisWordLength,
             visitedSquares: redisVisitedSquares,
-            allGames
+            allGames,
+            guessedLetters: redisGuessedLetters,
+            partialWord: redisPartialWord
           } = message.data;
           
-          //dev use todo remove
+          //todo: dev use, remove later
           const buttonContainer = document.querySelector('#button-container');
           buttonContainer.innerHTML = '';
           Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
@@ -488,14 +541,17 @@ class App {
           })
           
           // Store game map
-          wordLength = redisWordLength;
+          wordLength = Number(redisWordLength || 5);
+          currentScore = Number(redisPlayerScore || 0);
           currentGameMap = gameMap;
           visitedSquares = new Set(redisVisitedSquares || []);
+          guessedLetters = redisGuessedLetters || [];
+          partialWord = redisPartialWord || new Array(redisWordLength).fill('_').join('');
           
-          // Update map display
           updateMapDisplay();
+          updateLetterDisplay();
           
-          playerScore.innerText = 0;
+          playerScore.innerText = currentScore;
           
           // Set initial energy from stored value (convert to number to be safe)
           currentEnergy = Number(redisPlayerEnergy);
@@ -531,9 +587,24 @@ class App {
             movePlayer(playerPosition, currentPosition || playerPosition);
           }
         }
+        
+        if (message.type === 'guessLetter') {
+          const {
+            guessedLetters: redisGuessedLetters,
+            partialWord: redisPartialWord
+          } = message.data;
+          
+          guessedLetters = redisGuessedLetters;
+          partialWord = redisPartialWord;
+          
+          updateLetterDisplay();
+        }
       }
     });
     
+    //Aye-aye
+    const ayeAyeBtn = document.getElementById('aye-aye-button');
+    ayeAyeBtn.addEventListener('click', handleAyeAye);
     
     // How to Play
     const openModalBtn = document.getElementById('btn-how-to-play');

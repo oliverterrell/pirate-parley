@@ -17,7 +17,9 @@ type WebViewMessage =
     gameMap: { [key: string]: { [key: string]: string } },
     wordLength: number;
     visitedSquares: string[];
-    allGames: Record<string, any>
+    allGames: Record<string, any>,
+    guessedLetters: string[];
+    partialWord: string;
   };
 }
   | {
@@ -26,6 +28,14 @@ type WebViewMessage =
     playerEnergy: number;
     playerPosition: { row: number, col: number }
     visitedSquares: string[]
+  };
+}
+  | {
+  type: 'guessLetter';
+  data: {
+    letter: string;
+    guessedLetters: string[];
+    partialWord: string
   };
 }
   | {
@@ -93,6 +103,8 @@ Devvit.addCustomPostType({
     const positionKey = `position:${currentDateString}:${username}`;
     const energyKey = `energy:${currentDateString}:${username}`;
     const visitedSquaresKey = `visited:${currentDateString}:${username}`;
+    const guessedLettersKey = `guessed:${currentDateString}:${username}`;
+    const partialWordKey = `partial:${currentDateString}:${username}`;
     
     const [game] = useState(async () => {
       const game = await context.redis.get(gameKey);
@@ -114,6 +126,16 @@ Devvit.addCustomPostType({
       return visitedSquares ? visitedSquares.split('|') : [];
     })
     
+    const [guessedLetters, setGuessedLetters] = useState(async () => {
+      const guessedLetters = await context.redis.get(guessedLettersKey);
+      return guessedLetters ? guessedLetters.split('') : [];
+    });
+    
+    const [partialWord, setPartialWord] = useState<string>(async () => {
+      const partialWord = await context.redis.get(partialWordKey);
+      return partialWord ?? game.word.split('').map(_ => '_').join('');
+    })
+    
     const [webviewVisible, setWebviewVisible] = useState(false);
     
     // When the web view invokes `window.parent.postMessage` this function is called
@@ -133,6 +155,8 @@ Devvit.addCustomPostType({
               playerPosition: msg.data.playerPosition,
               gameMap: msg.data.game.board,
               wordLength: msg.data.game.word.length,
+              guessedLetters: [],
+              partialWord: game.word.split('').map(_ => '_').join(''),
               allGames: games
             },
           });
@@ -161,6 +185,37 @@ Devvit.addCustomPostType({
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
           break;
+        case 'guessLetter': {
+          console.log("guessing letter", msg.data.letter);
+          
+          const word = game.word.toLowerCase();
+          const letter = msg.data.letter.toLowerCase();
+          
+          let partialWordArray = partialWord.split('');
+          
+          for (let i = 0; i < word.length; i++) {
+            if (word[i] === letter) {
+              partialWordArray[i] = letter;
+            }
+          }
+          
+          const newPartialWord = partialWordArray.join('');
+          
+          await context.redis.set(guessedLettersKey, msg.data.guessedLetters.join(''));
+          await context.redis.set(partialWordKey, newPartialWord);
+          
+          context.ui.webView.postMessage('myWebView', {
+            type: 'guessLetter',
+            data: {
+              guessedLetters: msg.data.guessedLetters,
+              partialWord: newPartialWord
+            },
+          });
+          
+          setGuessedLetters(msg.data.guessedLetters);
+          setPartialWord(newPartialWord);
+          break;
+        }
         case 'initialData':
           console.log(`${msg.type} message received`)
           break;
@@ -182,7 +237,9 @@ Devvit.addCustomPostType({
           gameMap: game.board,
           wordLength: game.word.length,
           visitedSquares,
-          allGames: games
+          partialWord,
+          guessedLetters,
+          allGames: games,
         },
       });
     };

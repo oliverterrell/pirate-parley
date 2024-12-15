@@ -283,6 +283,8 @@ h3 {
   right: 0;
   bottom: 0;
   z-index: 100;
+}
+.dimmed-bg {
   background-color: rgba(0, 0, 0, 0.3);
 }
 #btn-how-to-play {
@@ -405,6 +407,80 @@ button:hover {
 
 button:active {
   transform: translateY(0);
+}
+
+.letter-board-dialog {
+  position: absolute;
+  width: 320px;
+  height: 210px;
+  border: 3px solid #BF6A1E;
+  background-color: white;
+  color: black;
+  margin: 52px auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.letter-board-header {
+  position: relative;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 40px;
+}
+.aye-aye-button {
+  width: 68px;
+  height: 22px;
+  background-color: #0AA97E;
+  color: white;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 8px auto 14px auto;
+  font-size: 19px;
+  text-align: center;
+  vertical-align: text-top;
+  letter-spacing: 0.05rem;
+  line-height: 1.3rem;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.keyboard-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 290px;
+  gap: 5px;
+  margin-left: 13px;
+}
+.keyboard-row {
+  display: flex;
+  gap: 5px;
+}
+.key {
+  width: 23px;
+  height: 23px;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid black
+}
+.selected {
+  border: 3px solid #1AC528;
+  width: 20px;
+  height: 20px;
+}
+/* Specific row offsets to match the staggered layout */
+.keyboard-row:nth-child(2) {
+  margin-left: 12.5px; /* Half a key width to create stagger */
+}
+
+.keyboard-row:nth-child(3) {
+  margin-left: 23px; /* One and a half key widths for bottom row */
 }
 
 @media (max-width: 640px) {
