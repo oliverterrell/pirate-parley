@@ -141,16 +141,22 @@ body {
 }
 .top-hud-backgrounds > * {
   height: 22px;
-  width: 91px;
+  width: 89px;
   background-color: #fae289;
-  transform: translateX(-1px);
   padding: 6px 0 2px 0;
   text-align: center;
   z-index: 20;
   vertical-align: middle;
 }
+.top-hud-backgrounds > *:first-child {
+  width: 88.5px;
+}
 .top-hud-backgrounds > *:nth-child(2) {
-  width: 152px;
+  width: 149px;
+  transform: translateX(-0.5px);
+}
+.top-hud-backgrounds > *:last-child {
+  transform: translateX(-1px);
 }
 .top-hud-container {
   position: absolute;
@@ -370,9 +376,10 @@ h3 {
 /* New button container */
 .button-container {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  width: 45%;
+  width: 90%;
 }
 
 button {
@@ -443,7 +450,10 @@ button:active {
 }
 
 .btn-game-dev-use {
-  padding: 3px;
+  flex: 0;
+  padding: 3px 7px;
   margin-left: 5px;
   border: 1px solid white;
+  text-wrap: nowrap;
+  max-width: 90px;
 }

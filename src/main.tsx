@@ -66,7 +66,7 @@ Devvit.addSchedulerJob({
 });
 
 Devvit.addMenuItem({
-  label: 'Run new day auto-update',
+  label: 'Start cron job (dev use)',
   location: 'subreddit',
   forUserType: 'moderator',
   onPress: async (event, context) => {

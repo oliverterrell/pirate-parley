@@ -232,7 +232,7 @@ const updateMapDisplay = () => {
   
   let solveTiles = ``;
   for (let i = 0; i < wordLength; i++) {
-    solveTiles += `<div class="solve-tile jersey" data-letter-num="${i + 1}">M</div>`;
+    solveTiles += `<div class="solve-tile jersey" data-letter-position="${i}"></div>`;
   }
   
   document.getElementById('solve-tiles-container').innerHTML = solveTiles;
@@ -469,7 +469,7 @@ class App {
           Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
             const gameBtn = document.createElement('button');
             gameBtn.className = 'btn-game-dev-use';
-            gameBtn.innerHTML = (i + 1) + ' ' + game.word;
+            gameBtn.innerHTML = (i + 1) + '. ' + game.word;
             gameBtn.addEventListener('click', () => {
               window.parent?.postMessage(
                 {
