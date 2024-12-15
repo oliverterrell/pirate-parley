@@ -46,7 +46,11 @@ type WebViewMessage =
     playerEnergy: number,
     visitedSquares: string[]
   };
-};
+} | {
+  type: 'hideWebView'
+} | {
+  type: 'completeGame'
+}
 
 Devvit.configure({
   redditAPI: true,
@@ -63,7 +67,7 @@ Devvit.addSchedulerJob({
     
     await context.redis.set(dayNumberKey, (currentDay + 1).toString());
     
-    const currentDateString = DateManager.getCurrentDateString();
+    const currentDateString = DateManager.getGameDateString();
     const gameKey = `game:${currentDateString}`;
     
     const gameData = Object.values(games)[currentDay % Object.values(games).length];
@@ -75,15 +79,19 @@ Devvit.addSchedulerJob({
   }
 });
 
-Devvit.addMenuItem({
-  label: 'Start cron job (dev use)',
-  location: 'subreddit',
-  forUserType: 'moderator',
-  onPress: async (event, context) => {
-    const jobId = await context.scheduler.runJob({
-      name: 'new-day',
-      cron: '0 11 * * *',
-    });
+Devvit.addTrigger({
+  event: 'AppInstall',
+  onEvent: async (_, context) => {
+    try {
+      const jobId = await context.scheduler.runJob({
+        cron: '0 11 * * *',
+        name: 'new-day',
+      });
+      await context.redis.set('newDayCronId', jobId);
+    } catch (e) {
+      console.log('error was not able to schedule:', e);
+      throw e;
+    }
   },
 });
 
@@ -98,18 +106,24 @@ Devvit.addCustomPostType({
       return currUser?.username ?? 'anon';
     });
     
-    const currentDateString = DateManager.getCurrentDateString();
+    const currentDateString = DateManager.getGameDateString();
     const gameKey = `game:${currentDateString}`;
     const positionKey = `position:${currentDateString}:${username}`;
     const energyKey = `energy:${currentDateString}:${username}`;
     const visitedSquaresKey = `visited:${currentDateString}:${username}`;
     const guessedLettersKey = `guessed:${currentDateString}:${username}`;
     const partialWordKey = `partial:${currentDateString}:${username}`;
+    const gameCompleteKey = `complete:${currentDateString}:${username}`;
     
     const [game] = useState(async () => {
       const game = await context.redis.get(gameKey);
       return game ? JSON.parse(game) : games.aargh_1;
     });
+    
+    const [gameComplete, setGameComplete] = useState(async () => {
+      const gameComplete = await context.redis.get(gameCompleteKey);
+      return gameComplete ? JSON.parse(gameComplete) : false;
+    })
     
     const [playerPosition, setPlayerPosition] = useState(async () => {
       const playerPosition = await context.redis.get(positionKey);
@@ -146,6 +160,8 @@ Devvit.addCustomPostType({
           await context.redis.set(positionKey, JSON.stringify(msg.data.playerPosition));
           await context.redis.set(energyKey, msg.data.playerEnergy.toString());
           await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'));
+          await context.redis.set(partialWordKey, game.word.split('').map(_ => '_').join(''));
+          await context.redis.set(guessedLettersKey, '')
           
           context.ui.webView.postMessage('myWebView', {
             type: 'initialData',
@@ -164,6 +180,8 @@ Devvit.addCustomPostType({
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
           setPlayerPosition(msg.data.playerPosition)
+          setPartialWord(game.word.split('').map(_ => '_').join(''));
+          setGuessedLetters([])
           break;
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
@@ -173,7 +191,7 @@ Devvit.addCustomPostType({
           await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'))
           
           context.ui.webView.postMessage('myWebView', {
-            type: 'movePlayer',
+            type: 'movePlayerResponse',
             data: {
               playerPosition: msg.data.playerPosition,
               playerEnergy: msg.data.playerEnergy,
@@ -216,10 +234,19 @@ Devvit.addCustomPostType({
           setPartialWord(newPartialWord);
           break;
         }
-        case 'initialData':
-          console.log(`${msg.type} message received`)
+        
+        case 'completeGame':
+          await context.redis.set(gameCompleteKey, 'true');
+          setGameComplete(true);
           break;
         
+        case 'hideWebView':
+          setWebviewVisible(false);
+          break;
+        
+        
+        case 'initialData':
+          break;
         default:
           throw new Error(`Unknown message type: ${msg satisfies never}`);
       }
@@ -227,6 +254,8 @@ Devvit.addCustomPostType({
     
     // When the button is clicked, send initial data to web view and show it
     const onShowWebviewClick = () => {
+      // if (gameComplete) return;
+      
       setWebviewVisible(true);
       context.ui.webView.postMessage('myWebView', {
         type: 'initialData',
@@ -248,6 +277,7 @@ Devvit.addCustomPostType({
     return (
       <vstack grow padding="small">
         <Welcome
+          gameComplete={gameComplete}
           webviewVisible={webviewVisible}
           username={username}
           onShowWebviewClick={onShowWebviewClick}

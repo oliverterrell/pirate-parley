@@ -234,7 +234,8 @@ const cleanupPosition = (position, handlers) => {
 const updateLetterDisplay = () => {
   let solveTiles = ``;
   for (let i = 0; i < wordLength; i++) {
-    solveTiles += `<div class="solve-tile jersey" data-letter-position="${i}">${partialWord.charAt(i) === '_' ? '' : partialWord.charAt(i)}</div>`;
+    const letterIsSolved = partialWord.charAt(i) !== '_';
+    solveTiles += `<div class="solve-tile jersey ${letterIsSolved ? 'correct' : ''}" data-letter-position="${i}">${letterIsSolved ? partialWord.charAt(i) : ''}</div>`;
   }
   
   document.getElementById('solve-tiles-container').innerHTML = solveTiles;
@@ -317,6 +318,12 @@ const handleChestSquare = () => {
         currentLetter = key.dataset.letter.toLowerCase();
         key.classList.add('selected');
       });
+    } else if (partialWord.includes(key.dataset.letter.toLowerCase())) {
+      key.classList.add('correct');
+      key.classList.remove('selected');
+    } else {
+      key.classList.add('incorrect');
+      key.classList.remove('selected');
     }
   })
 }
@@ -338,6 +345,8 @@ const handleAyeAye = () => {
     },
     '*'
   );
+  
+  currentLetter = null;
 }
 
 const handleLeaveSquare = (position) => {
@@ -345,12 +354,15 @@ const handleLeaveSquare = (position) => {
     const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
     square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
   }
+  
+  if (currentEnergy <= 0 && partialWord.includes('_')) {
+    const modal = document.getElementById('you-died-modal');
+    modal.classList.remove('hidden');
+  }
 }
 const handleEnterSquare = (position) => {
   const squareType = currentGameMap?.['r' + position.row]?.['c' + position.col] ?? null;
   const playerEnergy = document.querySelector('#player-energy');
-  
-  console.log(squareType);
   
   if (!visitedSquares.has(position.row + ',' + position.col)) {
     visitedSquares.add(position.row + ',' + position.col);
@@ -407,7 +419,6 @@ const movePlayer = async (newPosition, oldPosition) => {
   try {
     isProcessingMove = true;
     
-    // Make sure currentEnergy is initialized
     if (currentEnergy === null) {
       currentEnergy = 30;
     }
@@ -417,7 +428,7 @@ const movePlayer = async (newPosition, oldPosition) => {
       return;
     }
     
-    // For initial position, we need to clean up even though there's no currentHandlers yet
+    // good faith cleanup
     if (isInitialPosition) {
       cleanupPosition(oldPosition, {
         playerMouseover: null,
@@ -429,35 +440,37 @@ const movePlayer = async (newPosition, oldPosition) => {
       isInitialPosition = false;
     }
     
-    // Clean up old handlers if they exist
     if (currentHandlers) {
       cleanupPosition(oldPosition, currentHandlers);
     }
     
-    // Initialize new position and store new handlers
     currentHandlers = initPlayer(newPosition, oldPosition);
     
-    // Only update energy and notify parent if this was triggered by user interaction
-    // and the position actually changed
     if (!arePositionsEqual(newPosition, oldPosition)) {
       if (!isInitialPosition) {
-        handleLeaveSquare(oldPosition)
         handleEnterSquare(newPosition);
+        handleLeaveSquare(oldPosition)
       }
       
-      // Add visual processing indicator
-      const overlay = document.createElement('div');
-      overlay.className = 'move-processing-overlay';
-      document.body.appendChild(overlay);
-      
-      // Post message and wait for response
       await new Promise((resolve) => {
         const messageHandler = (ev) => {
           const {type, data} = ev.data;
           if (type === 'devvit-message' &&
-            data.message.type === 'movePlayer' &&
+            data.message.type === 'movePlayerResponse' &&
             arePositionsEqual(data.message.data.playerPosition, newPosition)) {
             window.removeEventListener('message', messageHandler);
+            
+            currentEnergy = data.message.data.playerEnergy;
+            const playerEnergy = document.querySelector('#player-energy');
+            if (playerEnergy) {
+              playerEnergy.innerText = currentEnergy;
+              if (currentEnergy < 30 && !playerEnergy.classList.contains('green-text')) {
+                playerEnergy.classList.add('red-text');
+              } else {
+                playerEnergy.classList.remove('red-text');
+              }
+            }
+            
             resolve();
           }
         };
@@ -476,9 +489,6 @@ const movePlayer = async (newPosition, oldPosition) => {
           '*'
         );
       });
-      
-      // Remove processing indicator
-      document.querySelector('.move-processing-overlay')?.remove();
     }
     
     currentPosition = newPosition;
@@ -486,6 +496,11 @@ const movePlayer = async (newPosition, oldPosition) => {
     isProcessingMove = false;
   }
 };
+
+const handleGameOverButtonClick = () => {
+  window.parent?.postMessage({ type: 'completeGame' }, '*');
+  window.parent?.postMessage({ type: 'hideWebView' }, '*');
+}
 
 class App {
   constructor() {
@@ -516,6 +531,10 @@ class App {
             partialWord: redisPartialWord
           } = message.data;
           
+          const usernameBox = document.getElementById('you-died-username');
+          usernameBox.innerText = username;
+          
+          
           //todo: dev use, remove later
           const buttonContainer = document.querySelector('#button-container');
           buttonContainer.innerHTML = '';
@@ -539,6 +558,7 @@ class App {
             });
             buttonContainer.appendChild(gameBtn)
           })
+          //todo >>>
           
           // Store game map
           wordLength = Number(redisWordLength || 5);
@@ -576,18 +596,6 @@ class App {
           }
         }
         
-        if (message.type === 'movePlayer') {
-          const {playerPosition, playerEnergy: newEnergy} = message.data;
-          
-          currentEnergy = newEnergy;
-          
-          if ((currentEnergy > 0 || arePositionsEqual(currentPosition, playerPosition)) &&
-            playerPosition &&
-            (!currentPosition || !arePositionsEqual(currentPosition, playerPosition))) {
-            movePlayer(playerPosition, currentPosition || playerPosition);
-          }
-        }
-        
         if (message.type === 'guessLetter') {
           const {
             guessedLetters: redisGuessedLetters,
@@ -601,6 +609,11 @@ class App {
         }
       }
     });
+    
+    //game over confirmation buttons
+    const aarghBtn = document.getElementById('aargh-button');
+    const ahoyBtn = document.getElementById('ahoy-button');
+    [aarghBtn, ahoyBtn].forEach((btn) => btn.addEventListener('click', handleGameOverButtonClick));
     
     //Aye-aye
     const ayeAyeBtn = document.getElementById('aye-aye-button');

@@ -1,5 +1,5 @@
 export const DateManager = {
-  getCurrentDate(): Date {
+  getGameDate(): Date {
     const utcDate = new Date();
     
     // Get Pacific time offset
@@ -25,17 +25,11 @@ export const DateManager = {
     );
   },
   
-  getCurrentDateString(): string {
-    const date = DateManager.getCurrentDate();
+  getGameDateString(): string {
+    const date = DateManager.getGameDate();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   },
-  
-  get2DaysFromNow(): Date {
-    const date = DateManager.getCurrentDate();
-    date.setDate(date.getDate() + 2);
-    return date;
-  }
 };

@@ -409,7 +409,14 @@ button:active {
   transform: translateY(0);
 }
 
-.letter-board-dialog {
+#you-died-username {
+  font-size: 12px;
+  transform: translateY(-10px);
+  width: 100%;
+  text-align: center;
+}
+
+.letter-board-dialog, .you-died-dialog {
   position: absolute;
   width: 320px;
   height: 210px;
@@ -420,13 +427,19 @@ button:active {
   left: 50%;
   transform: translateX(-50%);
 }
-.letter-board-header {
+  .you-died-dialog {
+    border-color: #EC1216;
+  }
+.letter-board-header, .you-died-header {
   position: relative;
   text-align: center;
   padding: 8px 0;
   font-size: 40px;
 }
-.aye-aye-button {
+  .you-died-header {
+    color: #FD080C;
+  }
+.aye-aye-button, .aargh-button {
   width: 68px;
   height: 22px;
   background-color: #0AA97E;
@@ -444,6 +457,14 @@ button:active {
   border-radius: 0;
   cursor: pointer;
 }
+.you-died-dialog > img {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.aargh-button {
+  width: 107px !important;
+}
 
 .keyboard-container {
   position: relative;
@@ -459,20 +480,27 @@ button:active {
   gap: 5px;
 }
 .key {
-  width: 23px;
-  height: 23px;
+  width: 25px;
+  height: 25px;
   font-size: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   cursor: pointer;
-  border: 1px solid black
+}
+.correct {
+  background-color: #1AC528;
+  cursor: default;
+}
+.incorrect {
+  background-color: #D9D9D9;
+  cursor: default;
 }
 .selected {
-  border: 3px solid #1AC528;
-  width: 20px;
-  height: 20px;
+  width: 23px;
+  height: 23px;
+  border: 1px solid black;
 }
 /* Specific row offsets to match the staggered layout */
 .keyboard-row:nth-child(2) {
