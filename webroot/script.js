@@ -235,7 +235,7 @@ const updateLetterDisplay = () => {
   let solveTiles = ``;
   for (let i = 0; i < wordLength; i++) {
     const letterIsSolved = partialWord.charAt(i) !== '_';
-    solveTiles += `<div class="solve-tile jersey ${letterIsSolved ? 'correct' : ''}" data-letter-position="${i}">${letterIsSolved ? partialWord.charAt(i) : ''}</div>`;
+    solveTiles += `<div class="solve-tile jersey ${letterIsSolved ? 'correct' : ''}" data-letter-position="${i}">${letterIsSolved ? partialWord.charAt(i).toUpperCase() : ''}</div>`;
   }
   
   document.getElementById('solve-tiles-container').innerHTML = solveTiles;
@@ -573,7 +573,6 @@ class App {
           
           playerScore.innerText = currentScore;
           
-          // Set initial energy from stored value (convert to number to be safe)
           currentEnergy = Number(redisPlayerEnergy);
           
           if (playerEnergy) {
