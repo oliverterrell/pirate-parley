@@ -71,6 +71,7 @@ Devvit.addSchedulerJob({
     const gameKey = `game:${currentDateString}`;
     
     const gameData = Object.values(games)[currentDay % Object.values(games).length];
+    
     if (gameData) {
       await context.redis.set(gameKey, JSON.stringify(gameData));
     } else {
@@ -82,6 +83,7 @@ Devvit.addSchedulerJob({
 Devvit.addTrigger({
   event: 'AppInstall',
   onEvent: async (_, context) => {
+    console.log("[devdrbo] app installed")
     try {
       const jobId = await context.scheduler.runJob({
         cron: '0 11 * * *',

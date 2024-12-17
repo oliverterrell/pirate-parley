@@ -2,11 +2,11 @@ export const DateManager = {
   getGameDate(): Date {
     const utcDate = new Date();
     
-    // Get Pacific time offset
     const pacificTime = utcDate.toLocaleString('en-US', {
       timeZone: 'America/Los_Angeles',
       hour12: false
     });
+    
     const pacificDate = new Date(pacificTime);
     
     // Handle early morning rollback
