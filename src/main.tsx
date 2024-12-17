@@ -62,40 +62,46 @@ Devvit.configure({
 
 Devvit.addSchedulerJob({
   name: 'new-day',
-  onRun: async (event, context) => {
+  onRun: async (_, context) => {
     const dayNumberKey = `day`;
     const dayNumber = await context.redis.get(dayNumberKey);
-    const currentDay = Number(dayNumber || 0);
+    let currentDay = Number(dayNumber || 1) % (Object.keys(games).length + 1);
+    
+    if (currentDay === 0) {
+      currentDay = 1;
+    }
     
     await context.redis.set(dayNumberKey, (currentDay + 1).toString());
     
     const currentDateString = DateManager.getGameDateString();
     const gameKey = `game:${currentDateString}`;
     
-    const gameData = Object.values(games)[currentDay % Object.values(games).length];
+    const gameData = Object.values(games).find(game => game.dayNum === currentDay);
     
     if (gameData) {
       await context.redis.set(gameKey, JSON.stringify(gameData));
     } else {
       await context.redis.set(gameKey, JSON.stringify(games.aargh_1));
     }
+    
+    console.log('currentDay', currentDay);
+    console.log('currentDate', currentDateString);
+    console.log('gameData', gameData);
   }
 });
 
 Devvit.addTrigger({
   event: 'AppInstall',
   onEvent: async (_, context) => {
-    console.log("[devdrbo] app installed")
-    try {
-      const jobId = await context.scheduler.runJob({
-        cron: '0 11 * * *',
-        name: 'new-day',
-      });
-      await context.redis.set('newDayCronId', jobId);
-    } catch (e) {
-      console.log('error was not able to schedule:', e);
-      throw e;
-    }
+    
+    console.log("\n[devdrbo] app installed\n")
+    
+    const jobId = await context.scheduler.runJob({
+      cron: '0 11 * * *',
+      name: 'new-day',
+    });
+    await context.redis.set('newDayCronId', jobId);
+    
   },
 });
 
@@ -182,10 +188,14 @@ Devvit.addCustomPostType({
       switch (msg.type) {
         case 'reset':
           console.log("reset game state")
-          await context.redis.set(positionKey, JSON.stringify(msg.data.playerPosition));
-          await context.redis.set(energyKey, msg.data.playerEnergy.toString());
-          await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'));
-          await context.redis.set(partialWordKey, game.word.split('').map(_ => '_').join(''));
+          const gameMap = msg.data.game ? msg.data.game.board : game.board;
+          const wordLength = msg.data.game ? msg.data.game.word.length : game.word.length;
+          const allGames = msg.data.game ? games : null;
+          
+          await context.redis.set(positionKey, JSON.stringify({row: 1, col: 1}));
+          await context.redis.set(energyKey, '30');
+          await context.redis.set(visitedSquaresKey, [].join('|'));
+          await context.redis.set(partialWordKey, new Array(wordLength).fill('_').join(''));
           await context.redis.set(guessedLettersKey, '')
           await context.redis.set(scoreKey, '0');
           
@@ -193,22 +203,23 @@ Devvit.addCustomPostType({
             type: 'initialData',
             data: {
               playerScore: 0,
-              playerEnergy: msg.data.playerEnergy,
-              visitedSquares: msg.data.visitedSquares,
-              playerPosition: msg.data.playerPosition,
-              gameMap: msg.data.game.board,
-              wordLength: msg.data.game.word.length,
+              playerEnergy: 30,
+              visitedSquares: [],
+              playerPosition: {row: 1, col: 1},
+              gameMap,
+              wordLength,
               guessedLetters: [],
-              allGames: games,
+              allGames,
               partialWord: game.word.split('').map(_ => '_').join(''),
+              reset: true,
             },
           });
           
           setPlayerScore(0);
-          setPlayerEnergy(msg.data.playerEnergy);
-          setVisitedSquares(msg.data.visitedSquares);
-          setPlayerPosition(msg.data.playerPosition)
-          setPartialWord(game.word.split('').map(_ => '_').join(''));
+          setPlayerEnergy(30);
+          setVisitedSquares([]);
+          setPlayerPosition({row: 1, col: 1})
+          setPartialWord(new Array(wordLength).fill('_').join(''));
           setGuessedLetters([])
           break;
         case 'movePlayer':
@@ -238,7 +249,7 @@ Devvit.addCustomPostType({
           const letter = msg.data.letter.toLowerCase();
           
           let partialWordArray = partialWord.split('');
-
+          
           const occurrences = word.split('').filter(char => char === letter).length;
           const newScore = playerScore + (occurrences * 10);
           
@@ -321,9 +332,9 @@ Devvit.addCustomPostType({
     return (
       <vstack grow padding="small">
         <Welcome
+          username={username}
           gameComplete={gameComplete}
           webviewVisible={webviewVisible}
-          username={username}
           onShowWebviewClick={onShowWebviewClick}
         />
         <vstack grow={webviewVisible} height={webviewVisible ? '100%' : '0%'}>

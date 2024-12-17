@@ -10,6 +10,7 @@ let wordLength = null;
 let currentLetter = null;
 let guessedLetters = null;
 let partialWord = null;
+let fullReset = false;
 
 const isAvailableMoveSquare = (position) => {
   return (
@@ -406,10 +407,14 @@ const handleEnterSquare = (position) => {
         currentEnergy -= 1;
         break;
     }
-  } else {
+  } else if (!fullReset) {
     playerEnergy.classList.add('red-text');
     playerEnergy.classList.remove('green-text');
     currentEnergy -= 1;
+  } else {
+    playerEnergy.classList.remove('red-text');
+    playerEnergy.classList.remove('green-text');
+    fullReset = false;
   }
   
   playerEnergy.innerText = currentEnergy;
@@ -520,6 +525,20 @@ class App {
       if (type === 'devvit-message') {
         const {message} = data;
         
+        if (message.type === 'triggerReset') {
+          window.parent?.postMessage(
+            {
+              type: 'reset',
+              data: {
+                playerPosition: {row: 1, col: 1},
+                playerEnergy: 30,
+                visitedSquares: [],
+              }
+            },
+            '*'
+          );
+        }
+        
         // Load initial data
         if (message.type === 'initialData') {
           console.log('Initial data received:', message.data);
@@ -533,8 +552,11 @@ class App {
             visitedSquares: redisVisitedSquares,
             guessedLetters: redisGuessedLetters,
             allGames,
-            partialWord: redisPartialWord
+            partialWord: redisPartialWord,
+            reset
           } = message.data;
+          
+          fullReset = reset;
           
           if (allGames) {
             const buttonContainer = document.getElementById('button-container');

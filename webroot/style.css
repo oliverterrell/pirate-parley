@@ -489,27 +489,34 @@ button:active {
   gap: 5px;
 }
 .key {
-  width: 25px;
-  height: 25px;
+  width: 23px;
+  height: 23px;
   font-size: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   cursor: pointer;
+  border: 1px solid darkgray;
 }
 .correct {
+  width: 25px;
+  height: 25px;
+  border: none;
   background-color: #1AC528;
   cursor: default;
 }
 .incorrect {
+  width: 25px;
+  height: 25px;
+  border: none;
   background-color: #D9D9D9;
   cursor: default;
 }
 .selected {
-  width: 23px;
-  height: 23px;
-  border: 1px solid black;
+  width: 21px;
+  height: 21px;
+  border: 2px solid black;
 }
 /* Specific row offsets to match the staggered layout */
 .keyboard-row:nth-child(2) {

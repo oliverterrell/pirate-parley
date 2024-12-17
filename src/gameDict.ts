@@ -43,6 +43,7 @@ const defaultBoard = {
 };
 
 export const aargh_1 = {
+  dayNum: 1,
   word: 'aargh',
   board: {
     r1: {
@@ -94,6 +95,7 @@ export const aargh_1 = {
   }
 }
 export const skull_2 = {
+  dayNum: 2,
   word: 'skull',
   board: {
     r1: {
@@ -154,6 +156,7 @@ export const skull_2 = {
   }
 }
 export const matey_3 = {
+  dayNum: 3,
   word: 'matey',
   board: {
     r1: {
@@ -198,6 +201,7 @@ export const matey_3 = {
   }
 }
 export const sword_4 = {
+  dayNum: 4,
   word: 'sword',
   board: {
     r2: {
@@ -233,14 +237,17 @@ export const sword_4 = {
 }
 
 export const jolly_5 = {
+  dayNum: 5,
   word: 'jolly',
   board: defaultBoard
 }
 export const roger_6 = {
+  dayNum: 6,
   word: 'roger',
   board: defaultBoard
 }
 export const booty_7 = {
+  dayNum: 7,
   word: 'booty',
   board: defaultBoard
 }
