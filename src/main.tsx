@@ -17,7 +17,7 @@ type WebViewMessage =
     gameMap: { [key: string]: { [key: string]: string } },
     wordLength: number;
     visitedSquares: string[];
-    allGames: Record<string, any>,
+    allGames?: Record<string, any>,
     guessedLetters: string[];
     partialWord: string;
   };
@@ -50,6 +50,8 @@ type WebViewMessage =
   type: 'hideWebView'
 } | {
   type: 'completeGame'
+} | {
+  type: 'toggleLevelSelection'
 }
 
 Devvit.configure({
@@ -97,6 +99,21 @@ Devvit.addTrigger({
   },
 });
 
+Devvit.addMenuItem({
+  description: "Show/hide level selection buttons",
+  label: "Toggle level selection (mod only)",
+  location: "post",
+  forUserType: "moderator",
+  onPress: async (_, context) => {
+    context.ui.webView.postMessage('myWebView', {
+      type: 'toggleLevelSelection',
+      data: {
+        allGames: games
+      }
+    });
+  }
+})
+
 // Add a custom post type to Devvit
 Devvit.addCustomPostType({
   name: "Pirate's Parley",
@@ -112,6 +129,7 @@ Devvit.addCustomPostType({
     const gameKey = `game:${currentDateString}`;
     const positionKey = `position:${currentDateString}:${username}`;
     const energyKey = `energy:${currentDateString}:${username}`;
+    const scoreKey = `score:${currentDateString}:${username}`;
     const visitedSquaresKey = `visited:${currentDateString}:${username}`;
     const guessedLettersKey = `guessed:${currentDateString}:${username}`;
     const partialWordKey = `partial:${currentDateString}:${username}`;
@@ -135,6 +153,11 @@ Devvit.addCustomPostType({
     const [playerEnergy, setPlayerEnergy] = useState(async () => {
       const playerEnergy = await context.redis.get(energyKey);
       return Number(playerEnergy ?? 30);
+    })
+    
+    const [playerScore, setPlayerScore] = useState(async () => {
+      const playerScore = await context.redis.get(scoreKey);
+      return Number(playerScore ?? 0);
     })
     
     const [visitedSquares, setVisitedSquares] = useState(async () => {
@@ -164,21 +187,24 @@ Devvit.addCustomPostType({
           await context.redis.set(visitedSquaresKey, msg.data.visitedSquares.join('|'));
           await context.redis.set(partialWordKey, game.word.split('').map(_ => '_').join(''));
           await context.redis.set(guessedLettersKey, '')
+          await context.redis.set(scoreKey, '0');
           
           context.ui.webView.postMessage('myWebView', {
             type: 'initialData',
             data: {
+              playerScore: 0,
               playerEnergy: msg.data.playerEnergy,
               visitedSquares: msg.data.visitedSquares,
               playerPosition: msg.data.playerPosition,
               gameMap: msg.data.game.board,
               wordLength: msg.data.game.word.length,
               guessedLetters: [],
+              allGames: games,
               partialWord: game.word.split('').map(_ => '_').join(''),
-              allGames: games
             },
           });
           
+          setPlayerScore(0);
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
           setPlayerPosition(msg.data.playerPosition)
@@ -212,6 +238,14 @@ Devvit.addCustomPostType({
           const letter = msg.data.letter.toLowerCase();
           
           let partialWordArray = partialWord.split('');
+
+          const occurrences = word.split('').filter(char => char === letter).length;
+          const newScore = playerScore + (occurrences * 10);
+          
+          if (occurrences > 0) {
+            await context.redis.set(scoreKey, newScore.toString());
+            setPlayerScore(newScore);
+          }
           
           for (let i = 0; i < word.length; i++) {
             if (word[i] === letter) {
@@ -224,11 +258,17 @@ Devvit.addCustomPostType({
           await context.redis.set(guessedLettersKey, msg.data.guessedLetters.join(''));
           await context.redis.set(partialWordKey, newPartialWord);
           
+          
+          if (newPartialWord === word) {
+            //todo handle game complete
+          }
+          
           context.ui.webView.postMessage('myWebView', {
             type: 'guessLetter',
             data: {
               guessedLetters: msg.data.guessedLetters,
-              partialWord: newPartialWord
+              partialWord: newPartialWord,
+              playerScore: newScore
             },
           });
           
@@ -248,6 +288,7 @@ Devvit.addCustomPostType({
         
         
         case 'initialData':
+        case 'toggleLevelSelection':
           break;
         default:
           throw new Error(`Unknown message type: ${msg satisfies never}`);
@@ -262,7 +303,8 @@ Devvit.addCustomPostType({
       context.ui.webView.postMessage('myWebView', {
         type: 'initialData',
         data: {
-          username: username,
+          playerScore,
+          username,
           playerPosition,
           playerEnergy: Number(playerEnergy),
           gameMap: game.board,
@@ -270,7 +312,7 @@ Devvit.addCustomPostType({
           visitedSquares,
           partialWord,
           guessedLetters,
-          allGames: games,
+          allGames: games
         },
       });
     };

@@ -3,9 +3,9 @@ let currentHandlers = null;
 let currentPosition = null;
 let currentEnergy = null;
 let currentGameMap = null;
-let currentScore = 0;
 let visitedSquares = null;
 let isProcessingMove = false;
+let currentScore = null;
 let wordLength = null;
 let currentLetter = null;
 let guessedLetters = null;
@@ -232,6 +232,31 @@ const cleanupPosition = (position, handlers) => {
 };
 
 const updateLetterDisplay = () => {
+  document.querySelectorAll('.key').forEach(key => {
+    if (!guessedLetters.includes(key.dataset.letter.toLowerCase())) {
+      key.addEventListener('click', () => {
+        if (currentLetter) {
+          document.querySelector(`div[data-letter="${currentLetter.toUpperCase()}"]`).classList.remove('selected');
+        }
+        currentLetter = key.dataset.letter.toLowerCase();
+        key.classList.add('selected');
+      });
+    } else if (partialWord.includes(key.dataset.letter.toLowerCase())) {
+      key.classList.add('correct');
+      key.classList.remove('selected');
+    } else {
+      key.classList.add('incorrect');
+      key.classList.remove('selected');
+    }
+    if (key.dataset.letter.toLowerCase() === currentLetter?.toLowerCase()) {
+      key.classList.add('bounce');
+      setTimeout(() => {
+        key.classList.remove('bounce')
+        currentLetter = null;
+      }, 500);
+    }
+  })
+  
   let solveTiles = ``;
   for (let i = 0; i < wordLength; i++) {
     const letterIsSolved = partialWord.charAt(i) !== '_';
@@ -301,31 +326,13 @@ const openLetterBoard = () => {
   
   const ayeAyeBtn = document.getElementById('aye-aye-button');
   ayeAyeBtn.addEventListener('click', () => {
-    modal.classList.add('hidden');
+    setTimeout(() => modal.classList.add('hidden'), 1500);
   });
 }
 const handleChestSquare = () => {
   const title = document.getElementById('letter-board-title');
   title.innerHTML = 'Choose wisely';
   openLetterBoard();
-  
-  document.querySelectorAll('.key').forEach(key => {
-    if (!guessedLetters.includes(key.dataset.letter.toLowerCase())) {
-      key.addEventListener('click', () => {
-        if (currentLetter) {
-          document.querySelector(`div[data-letter="${currentLetter.toUpperCase()}"]`).classList.remove('selected');
-        }
-        currentLetter = key.dataset.letter.toLowerCase();
-        key.classList.add('selected');
-      });
-    } else if (partialWord.includes(key.dataset.letter.toLowerCase())) {
-      key.classList.add('correct');
-      key.classList.remove('selected');
-    } else {
-      key.classList.add('incorrect');
-      key.classList.remove('selected');
-    }
-  })
 }
 
 const handleAyeAye = () => {
@@ -345,8 +352,6 @@ const handleAyeAye = () => {
     },
     '*'
   );
-  
-  currentLetter = null;
 }
 
 const handleLeaveSquare = (position) => {
@@ -498,8 +503,8 @@ const movePlayer = async (newPosition, oldPosition) => {
 };
 
 const handleGameOverButtonClick = () => {
-  window.parent?.postMessage({ type: 'completeGame' }, '*');
-  window.parent?.postMessage({ type: 'hideWebView' }, '*');
+  window.parent?.postMessage({type: 'completeGame'}, '*');
+  window.parent?.postMessage({type: 'hideWebView'}, '*');
 }
 
 class App {
@@ -526,44 +531,43 @@ class App {
             gameMap,
             wordLength: redisWordLength,
             visitedSquares: redisVisitedSquares,
-            allGames,
             guessedLetters: redisGuessedLetters,
+            allGames,
             partialWord: redisPartialWord
           } = message.data;
+          
+          if (allGames) {
+            const buttonContainer = document.getElementById('button-container');
+            buttonContainer.innerHTML = '';
+            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+              const gameBtn = document.createElement('button');
+              gameBtn.className = 'btn-game-dev-use';
+              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+              gameBtn.addEventListener('click', () => {
+                window.parent?.postMessage(
+                  {
+                    type: 'reset',
+                    data: {
+                      game,
+                      playerPosition: {row: 1, col: 1},
+                      playerEnergy: 30,
+                      visitedSquares: []
+                    }
+                  },
+                  '*'
+                );
+              });
+              buttonContainer.appendChild(gameBtn)
+            })
+          }
           
           const usernameBox = document.getElementById('you-died-username');
           usernameBox.innerText = username;
           
-          
-          //todo: dev use, remove later
-          const buttonContainer = document.querySelector('#button-container');
-          buttonContainer.innerHTML = '';
-          Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-            const gameBtn = document.createElement('button');
-            gameBtn.className = 'btn-game-dev-use';
-            gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-            gameBtn.addEventListener('click', () => {
-              window.parent?.postMessage(
-                {
-                  type: 'reset',
-                  data: {
-                    game,
-                    playerPosition: { row: 1, col: 1 },
-                    playerEnergy: 30,
-                    visitedSquares: []
-                  }
-                },
-                '*'
-              );
-            });
-            buttonContainer.appendChild(gameBtn)
-          })
-          //todo >>>
-          
           // Store game map
           wordLength = Number(redisWordLength || 5);
-          currentScore = Number(redisPlayerScore || 0);
           currentGameMap = gameMap;
+          currentScore = Number(redisPlayerScore || 0);
           visitedSquares = new Set(redisVisitedSquares || []);
           guessedLetters = redisGuessedLetters || [];
           partialWord = redisPartialWord || new Array(redisWordLength).fill('_').join('');
@@ -598,13 +602,28 @@ class App {
         if (message.type === 'guessLetter') {
           const {
             guessedLetters: redisGuessedLetters,
-            partialWord: redisPartialWord
+            partialWord: redisPartialWord,
+            playerScore: redisPlayerScore,
           } = message.data;
+          
+          currentScore = redisPlayerScore || 0;
           
           guessedLetters = redisGuessedLetters;
           partialWord = redisPartialWord;
           
+          playerScore.innerText = redisPlayerScore;
+          
           updateLetterDisplay();
+        }
+        
+        if (message.type === 'toggleLevelSelection') {
+          const buttonContainer = document.getElementById('button-container');
+          
+          if (buttonContainer.classList.contains('hidden')) {
+            buttonContainer.classList.remove('hidden');
+          } else {
+            buttonContainer.classList.add('hidden');
+          }
         }
       }
     });
