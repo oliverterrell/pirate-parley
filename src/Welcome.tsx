@@ -101,13 +101,13 @@ export const Welcome = ({
               <text size={'small'} color={'black'} alignment={'center middle'}>30m 20s</text>
               <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>85pts</text>
             </hstack>
-          </vstack> : <hstack gap={'small'} backgroundColor={'#fae289'} border={'thick'} borderColor={'#e89a60'} padding={'large'} alignment={'center middle'} width={'90%'}>
-            <image url={'img_died.png'} imageWidth={'150px'} imageHeight={'150px'} description={'Nobody survived'}/>
+          </vstack> : <vstack gap={'small'} backgroundColor={'#fae289'} border={'thick'} borderColor={'#e89a60'} padding={'large'} alignment={'center middle'} width={'90%'}>
+            <image url={'img_died.png'} imageWidth={'120px'} imageHeight={'120px'} description={'Nobody survived'}/>
             <zstack alignment={'start middle'} padding={'medium'}>
-              <text size={'xlarge'} color={'black'} alignment={'start middle'}>No one survived the island yesterday.
+              <text size={'large'} color={'black'} alignment={'start middle'} wrap={true} width={'60%'}>No one survived the island yesterday.
               </text>
             </zstack>
-          </hstack>
+          </vstack>
         }
       </vstack>
       
@@ -135,7 +135,7 @@ export const Welcome = ({
       
       <vstack gap={'none'} padding={'large'} alignment={'center bottom'}>
         <text weight={'bold'} size={'small'} color={'black'} style={'heading'}>{moment().format('MMMM D, YYYY')}</text>
-        <zstack onPress={onShowWebviewClick} width={'200px'} height={'29px'} alignment={'center middle'}
+        <zstack onPress={gameComplete ? undefined : onShowWebviewClick} width={'200px'} height={'29px'} alignment={'center middle'} border={'thick'} borderColor={'white'}
                 backgroundColor={`#09a87e`}>
           {gameComplete
             ? <text>Come back tomorrow 🏴‍☠️</text>

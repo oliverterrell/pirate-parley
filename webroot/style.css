@@ -418,14 +418,25 @@ button:active {
   transform: translateY(0);
 }
 
-#you-died-username {
+.survived-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+}
+
+#you-died-username, #survived-username {
   font-size: 12px;
   transform: translateY(-10px);
   width: 100%;
   text-align: center;
 }
 
-.letter-board-dialog, .you-died-dialog {
+.letter-board-dialog, .you-died-dialog, .survived-dialog {
   position: absolute;
   width: 320px;
   height: 210px;
@@ -439,7 +450,7 @@ button:active {
   .you-died-dialog {
     border-color: #EC1216;
   }
-.letter-board-header, .you-died-header {
+.letter-board-header, .you-died-header, .survived-header {
   position: relative;
   text-align: center;
   padding: 8px 0;

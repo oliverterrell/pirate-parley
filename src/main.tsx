@@ -52,6 +52,11 @@ type WebViewMessage =
   type: 'completeGame'
 } | {
   type: 'toggleLevelSelection'
+} | {
+  type: 'updateTimer';
+  data: {
+    elapsedTime: number;
+  }
 }
 
 Devvit.configure({
@@ -97,7 +102,7 @@ Devvit.addTrigger({
     console.log("\n[devdrbo] app installed\n")
     
     const jobId = await context.scheduler.runJob({
-      cron: '0 11 * * *',
+      cron: '0 7 * * *',
       name: 'new-day',
     });
     await context.redis.set('newDayCronId', jobId);
@@ -140,6 +145,12 @@ Devvit.addCustomPostType({
     const guessedLettersKey = `guessed:${currentDateString}:${username}`;
     const partialWordKey = `partial:${currentDateString}:${username}`;
     const gameCompleteKey = `complete:${currentDateString}:${username}`;
+    const timerKey = `timer:${currentDateString}:${username}`;
+    
+    const [elapsedTime, setElapsedTime] = useState(async () => {
+      const storedTime = await context.redis.get(timerKey);
+      return Number(storedTime ?? 0);
+    });
     
     const [game] = useState(async () => {
       const game = await context.redis.get(gameKey);
@@ -198,10 +209,12 @@ Devvit.addCustomPostType({
           await context.redis.set(partialWordKey, new Array(wordLength).fill('_').join(''));
           await context.redis.set(guessedLettersKey, '')
           await context.redis.set(scoreKey, '0');
+          await context.redis.set(timerKey, '0')
           
           context.ui.webView.postMessage('myWebView', {
             type: 'initialData',
             data: {
+              username,
               playerScore: 0,
               playerEnergy: 30,
               visitedSquares: [],
@@ -212,6 +225,7 @@ Devvit.addCustomPostType({
               allGames,
               partialWord: game.word.split('').map(_ => '_').join(''),
               reset: true,
+              elapsedTime: 0
             },
           });
           
@@ -221,6 +235,7 @@ Devvit.addCustomPostType({
           setPlayerPosition({row: 1, col: 1})
           setPartialWord(new Array(wordLength).fill('_').join(''));
           setGuessedLetters([])
+          setElapsedTime(0)
           break;
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
@@ -269,24 +284,52 @@ Devvit.addCustomPostType({
           await context.redis.set(guessedLettersKey, msg.data.guessedLetters.join(''));
           await context.redis.set(partialWordKey, newPartialWord);
           
-          
+          let gameComplete = false;
+          let finalScore = null;
           if (newPartialWord === word) {
-            //todo handle game complete
+            gameComplete = true;
+            await context.redis.set(gameCompleteKey, 'true');
+            
+            let timeBonus = 0;
+            if (elapsedTime < 300) {
+              timeBonus = 50;
+            } else if (elapsedTime < 600) {
+              timeBonus = 20;
+            }
+            
+            finalScore = newScore + timeBonus + playerEnergy;
+            
+            await context.redis.set(scoreKey, finalScore.toString())
+            
+            setGameComplete(true);
           }
+          
+          const timeElapsed = await context.redis.get(timerKey);
           
           context.ui.webView.postMessage('myWebView', {
             type: 'guessLetter',
             data: {
               guessedLetters: msg.data.guessedLetters,
               partialWord: newPartialWord,
-              playerScore: newScore
+              playerScore: newScore,
+              gameComplete,
+              timeToSolve: timeElapsed,
+              energyRemaining: playerEnergy,
+              finalScore
             },
           });
+          
           
           setGuessedLetters(msg.data.guessedLetters);
           setPartialWord(newPartialWord);
           break;
         }
+        
+        case 'updateTimer':
+          const newTime = msg.data.elapsedTime;
+          await context.redis.set(timerKey, newTime.toString());
+          setElapsedTime(newTime);
+          break;
         
         case 'completeGame':
           await context.redis.set(gameCompleteKey, 'true');
@@ -309,6 +352,10 @@ Devvit.addCustomPostType({
     // When the button is clicked, send initial data to web view and show it
     const onShowWebviewClick = () => {
       // if (gameComplete) return;
+      let allGames = null;
+      if (context.reddit.getCurrentUser().then(user => user.modPermissions.has('all'))) {
+        allGames = games;
+      }
       
       setWebviewVisible(true);
       context.ui.webView.postMessage('myWebView', {
@@ -323,7 +370,8 @@ Devvit.addCustomPostType({
           visitedSquares,
           partialWord,
           guessedLetters,
-          allGames: games
+          allGames,
+          elapsedTime
         },
       });
     };

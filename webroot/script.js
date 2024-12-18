@@ -11,6 +11,54 @@ let currentLetter = null;
 let guessedLetters = null;
 let partialWord = null;
 let fullReset = false;
+let startTime = Date.now();
+let timerInterval = null;
+let totalElapsedSeconds = 0;
+
+const startTimer = (initialElapsedTime = 0) => {
+  if (timerInterval) return;
+  
+  totalElapsedSeconds = initialElapsedTime;
+  startTime = Date.now() - (totalElapsedSeconds * 1000); // Adjust start time based on previous elapsed time
+  
+  timerInterval = setInterval(() => {
+    totalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Update timer display
+    const timerDisplay = document.querySelector('#player-time');
+    if (timerDisplay) {
+      const minutes = Math.floor(totalElapsedSeconds / 60);
+      const seconds = totalElapsedSeconds % 60;
+      timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    }
+    
+    // Send updated time to parent
+    window.parent?.postMessage(
+      {
+        type: 'updateTimer',
+        data: {
+          elapsedTime: totalElapsedSeconds
+        }
+      },
+      '*'
+    );
+  }, 1000);
+};
+
+const resetTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  totalElapsedSeconds = 0;
+  startTime = Date.now();
+  
+  const timerDisplay = document.querySelector('#player-time');
+  if (timerDisplay) {
+    timerDisplay.innerText = '00m 00s';
+  }
+};
 
 const isAvailableMoveSquare = (position) => {
   return (
@@ -356,10 +404,10 @@ const handleAyeAye = () => {
 }
 
 const handleLeaveSquare = (position) => {
-  if ((currentGameMap?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
-    const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
-    square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
-  }
+  // if ((currentGameMap?.['r' + position.row]?.['c' + position.col] || null) === 'chest') {
+  //   const square = document.querySelector(`div[data-position="${position.row},${position.col}"]`);
+  //   square.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
+  // }
   
   if (currentEnergy <= 0 && partialWord.includes('_')) {
     const modal = document.getElementById('you-died-modal');
@@ -526,6 +574,7 @@ class App {
         const {message} = data;
         
         if (message.type === 'triggerReset') {
+          resetTimer();
           window.parent?.postMessage(
             {
               type: 'reset',
@@ -553,38 +602,53 @@ class App {
             guessedLetters: redisGuessedLetters,
             allGames,
             partialWord: redisPartialWord,
-            reset
+            reset,
+            elapsedTime
           } = message.data;
           
           fullReset = reset;
           
-          if (allGames) {
-            const buttonContainer = document.getElementById('button-container');
-            buttonContainer.innerHTML = '';
-            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-              const gameBtn = document.createElement('button');
-              gameBtn.className = 'btn-game-dev-use';
-              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-              gameBtn.addEventListener('click', () => {
-                window.parent?.postMessage(
-                  {
-                    type: 'reset',
-                    data: {
-                      game,
-                      playerPosition: {row: 1, col: 1},
-                      playerEnergy: 30,
-                      visitedSquares: []
-                    }
-                  },
-                  '*'
-                );
-              });
-              buttonContainer.appendChild(gameBtn)
+          if (fullReset) {
+            resetTimer();
+            startTimer(0);
+            document.querySelectorAll('.key').forEach((key) => {
+              key.classList.remove('correct');
+              key.classList.remove('incorrect');
+              key.classList.remove('selected');
             })
+          } else {
+            startTimer(elapsedTime);
           }
           
+          // if (allGames) {
+          //   const buttonContainer = document.getElementById('button-container');
+          //   buttonContainer.innerHTML = '';
+          //   Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+          //     const gameBtn = document.createElement('button');
+          //     gameBtn.className = 'btn-game-dev-use';
+          //     gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+          //     gameBtn.addEventListener('click', () => {
+          //       window.parent?.postMessage(
+          //         {
+          //           type: 'reset',
+          //           data: {
+          //             game,
+          //             playerPosition: {row: 1, col: 1},
+          //             playerEnergy: 30,
+          //             visitedSquares: []
+          //           }
+          //         },
+          //         '*'
+          //       );
+          //     });
+          //     buttonContainer.appendChild(gameBtn)
+          //   })
+          // }
+          
           const usernameBox = document.getElementById('you-died-username');
+          const survivedUsernameBox = document.getElementById('survived-username')
           usernameBox.innerText = username;
+          survivedUsernameBox.innerText = username;
           
           // Store game map
           wordLength = Number(redisWordLength || 5);
@@ -626,6 +690,10 @@ class App {
             guessedLetters: redisGuessedLetters,
             partialWord: redisPartialWord,
             playerScore: redisPlayerScore,
+            gameComplete,
+            energyRemaining,
+            timeToSolve,
+            finalScore
           } = message.data;
           
           currentScore = redisPlayerScore || 0;
@@ -636,6 +704,22 @@ class App {
           playerScore.innerText = redisPlayerScore;
           
           updateLetterDisplay();
+          
+          if (gameComplete) {
+            clearInterval(timerInterval);
+            const survivedEnergy = document.getElementById('survived-energy');
+            const survivedTime = document.getElementById('survived-time');
+            const survivedScore = document.getElementById('survived-puzzle');
+            survivedScore.innerText = finalScore + 'pts';
+            playerScore.innerText = finalScore;
+            const modal = document.getElementById('survived-modal');
+            modal.classList.remove('hidden');
+            
+            survivedEnergy.innerText = energyRemaining + '/30';
+            const minutes = Math.floor(timeToSolve / 60);
+            const seconds = timeToSolve % 60;
+            survivedTime.innerText = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+          }
         }
         
         if (message.type === 'toggleLevelSelection') {

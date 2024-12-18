@@ -223,13 +223,19 @@
       the word faster than any other scumbags.<br/><br/>
       
       <strong>Moving around the Board:</strong><br>
-      Select the cell where you want to move to. You can move up, down, left, and right by clicking around the map.
+      Select the cell where you want to move to. Tap on your player icon to view available moves.
       Find the shortest way to your desired location.<br/><br/>
       
       <strong>Energy:</strong><br/>
       Each move costs 1 unit of energy. Removing obstacles costs units of energy. Removing rocks costs 2 units of
       energy.
       You can find energy boosts on the map. Running out of energy will end the game.<br/><br/>
+      
+      <strong>Solving the Puzzle</strong><br/>
+      If you think you’re ready to solve the puzzle, go ahead. However, wrong guesses will take away 5 energy.<br/><br/>
+      
+      <strong>Daily Puzzles</strong><br/>
+      Puzzles are started each day at 12am PST and ends at 12pm PST.<br/><br/>
       
       <strong>Points Earned:</strong><br/>
       <div class="points-earned-table">
@@ -341,19 +347,30 @@
       <div id="you-died-title" class="jacquard">You Died</div>
     </div>
     <div id="you-died-username" class="jetbrains-mono-text"></div>
-    <img src="assets/img_died.png" height="85" width="85" alt="aargh" />
+    <img src="assets/img_died.png" height="85" width="85" alt="aargh"/>
     <div id="aargh-button" class="aargh-button jersey">Aargh</div>
   </div>
 </div>
 
 <!-- You Survived -->
-<div id="survived-modal" class="modal dimmed-bg hidden">
+<div id="survived-modal" class="modal hidden">
   <div class="survived-dialog">
     <div class="survived-header">
       <div id="survived-title" class="jacquard">You Survived</div>
     </div>
     <div id="survived-username" class="jetbrains-mono-text"></div>
-<!--    <img src="assets/img_died.png" height="85" width="85" alt="aargh" />-->
+    <div class="survived-row jetbrains-mono-text">
+      <div>Time</div>
+      <div id="survived-time" ></div>
+    </div>
+    <div class="survived-row jetbrains-mono-text">
+      <div>Energy Left:</div>
+      <div id="survived-energy"></div>
+    </div>
+    <div class="survived-row jetbrains-mono-text">
+      <div>Puzzle Score:</div>
+      <div id="survived-puzzle"></div>
+    </div>
     <div id="ahoy-button" class="aargh-button jersey">Ahoy!!!</div>
   </div>
 </div>
