@@ -298,11 +298,13 @@
 
 <!-- Letter Board -->
 <div id="letter-board-modal" class="modal hidden">
-  <div class="letter-board-dialog">
+  <div id="letter-board-dialog" class="letter-board-dialog">
     <div class="letter-board-header">
       <div id="letter-board-title" class="jacquard"></div>
     </div>
-    <div class="keyboard-container jersey">
+    <div id="solve-disclaimer" class="jetbrains-mono-text">Wrong guesses cost <span style="color: red;">5 Energy</span></div>
+    <div id="solve-preview" class="jersey"></div>
+    <div id="keyboard-container" class="keyboard-container jersey">
       <div class="keyboard-row">
         <div class="key" data-letter="Q">Q</div>
         <div class="key" data-letter="W">W</div>
@@ -334,9 +336,11 @@
         <div class="key" data-letter="B">B</div>
         <div class="key" data-letter="N">N</div>
         <div class="key" data-letter="M">M</div>
+        <div id="backspace-button" class="key" data-letter="backspace"><img src="assets/backspace.png" height="29" width="29" alt="backspace" /></div>
       </div>
     </div>
     <div id="aye-aye-button" class="aye-aye-button jersey">Aye aye</div>
+    <div id="try-solve-button" class="aye-aye-button jersey">solve</div>
   </div>
 </div>
 

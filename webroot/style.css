@@ -211,7 +211,7 @@ body {
   75% { transform: scale(0.9); }
 }
 
-#solve-tiles-container {
+#solve-tiles-container, #solve-preview {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -223,7 +223,14 @@ body {
   z-index: 30;
 }
 
-.solve-tile {
+#solve-preview {
+  position: relative;
+  top: -10px;
+}
+
+
+
+.solve-tile, .solve-preview-tile {
   position: relative;
   font-size: 24px;
   text-align: center;
@@ -436,6 +443,15 @@ button:active {
   text-align: center;
 }
 
+#solve-disclaimer {
+  position: relative;
+  top: -12px;
+  font-size: 12px;
+  width: 100%;
+  text-align: center;
+  font-weight: lighter;
+}
+
 .letter-board-dialog, .you-died-dialog, .survived-dialog {
   position: absolute;
   width: 320px;
@@ -446,6 +462,10 @@ button:active {
   margin: 52px auto;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.letter-board-solve {
+  height: 250px !important;
 }
   .you-died-dialog {
     border-color: #EC1216;
@@ -495,6 +515,12 @@ button:active {
   gap: 5px;
   margin-left: 13px;
 }
+.letter-solve-guess {
+  background-color: white !important;
+  border: 1px solid black !important;
+  width: 23px !important;
+  height: 23px !important;
+}
 .keyboard-row {
   display: flex;
   gap: 5px;
@@ -509,6 +535,12 @@ button:active {
   text-align: center;
   cursor: pointer;
   border: 1px solid darkgray;
+}
+.wrong {
+  width: 25px !important;
+  height: 25px !important;
+  background-color: #FD080C !important;
+  border: none !important;
 }
 .correct {
   width: 25px;

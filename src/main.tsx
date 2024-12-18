@@ -57,6 +57,9 @@ type WebViewMessage =
   data: {
     elapsedTime: number;
   }
+} | {
+  type: 'solvePuzzle',
+  data: { solveAttempt: string, playerEnergy: number }
 }
 
 Devvit.configure({
@@ -324,6 +327,52 @@ Devvit.addCustomPostType({
           setPartialWord(newPartialWord);
           break;
         }
+        
+        case 'solvePuzzle':
+          console.log("solving puzzle", msg.data.solveAttempt);
+          
+          const word = game.word.toLowerCase();
+          const attempt = msg.data.solveAttempt.toLowerCase();
+          const isCorrect = word === attempt;
+          
+          if (isCorrect) {
+            await context.redis.set(gameCompleteKey, 'true');
+            
+            let timeBonus = 0;
+            if (elapsedTime < 300) {
+              timeBonus = 50;
+            } else if (elapsedTime < 600) {
+              timeBonus = 20;
+            }
+            
+            const finalScore = playerScore + timeBonus + playerEnergy + (10 * word.length);
+            await context.redis.set(scoreKey, finalScore.toString());
+            
+            context.ui.webView.postMessage('myWebView', {
+              type: 'guessLetter',
+              data: {
+                correct: true,
+                timeToSolve: elapsedTime,
+                energyRemaining: playerEnergy,
+                finalScore
+              },
+            });
+            
+            setGameComplete(true);
+          } else {
+            const newEnergy = playerEnergy - 5;
+            await context.redis.set(energyKey, newEnergy.toString())
+            setPlayerEnergy(newEnergy)
+
+            context.ui.webView.postMessage('myWebView', {
+              type: 'solveAttempt',
+              data: {
+                correct: false,
+                playerEnergy: newEnergy
+              },
+            });
+          }
+          break;
         
         case 'updateTimer':
           const newTime = msg.data.elapsedTime;

@@ -14,6 +14,7 @@ let fullReset = false;
 let startTime = Date.now();
 let timerInterval = null;
 let totalElapsedSeconds = 0;
+let solveTry = '';
 
 const startTimer = (initialElapsedTime = 0) => {
   if (timerInterval) return;
@@ -281,6 +282,8 @@ const cleanupPosition = (position, handlers) => {
 };
 
 const updateLetterDisplay = () => {
+  if (!guessedLetters) return;
+  
   document.querySelectorAll('.key').forEach(key => {
     if (!guessedLetters.includes(key.dataset.letter.toLowerCase())) {
       key.addEventListener('click', () => {
@@ -359,11 +362,6 @@ const updateMapDisplay = () => {
         }
         
         square.appendChild(itemElement);
-      } else if (item === 'chest' && visitedSquares.has(`${rowNum},${colNum}`)) {
-        const itemElement = document.createElement('div');
-        itemElement.classList.add('map-item', `map-item-${item}`);
-        itemElement.innerHTML = '<img src="assets/chest.png" alt="chest" width="29" height="29" style="opacity: 0.4" />';
-        square.appendChild(itemElement);
       }
     });
   });
@@ -382,6 +380,107 @@ const handleChestSquare = () => {
   const title = document.getElementById('letter-board-title');
   title.innerHTML = 'Choose wisely';
   openLetterBoard();
+}
+
+const handleSolveButtonClick = () => {
+  const title = document.getElementById('letter-board-title');
+  const disclaimer = document.getElementById('solve-disclaimer')
+  const ayeAyeBtn = document.getElementById('aye-aye-button')
+  const trySolveBtn = document.getElementById('try-solve-button')
+  const backspace = document.getElementById('backspace-button')
+  const solvePreview = document.getElementById('solve-preview');
+  const letterBoard = document.getElementById('letter-board-dialog');
+  const keyboardContainer = document.getElementById('keyboard-container');
+  
+  title.innerHTML = 'Solve The Puzzle';
+  disclaimer.classList.remove('hidden');
+  ayeAyeBtn.classList.add('hidden');
+  trySolveBtn.classList.remove('hidden');
+  backspace.classList.remove('hidden');
+  
+  let solvePreviewTiles = ``;
+  for (let i = 0; i < wordLength; i++) {
+    solvePreviewTiles += `<div class="solve-preview-tile jersey" data-solve-letter-position="${i}"></div>`;
+  }
+
+  letterBoard.classList.add('letter-board-solve');
+  keyboardContainer.classList.add('solve-keyboard-container');
+  
+  solvePreview.innerHTML = solvePreviewTiles;
+  solvePreview.classList.remove('hidden');
+  
+  openLetterBoard(true);
+  
+  document.querySelectorAll('.key').forEach(key => {
+    key.addEventListener('click', () => {
+      if (key.dataset.letter === 'backspace') {
+        if (solveTry.length > 0) {
+          const lastTile = document.querySelector(`div[data-solve-letter-position="${solveTry.length - 1}"]`);
+          if (lastTile) {
+            lastTile.classList.remove('letter-solve-guess');
+            lastTile.innerText = '';
+          }
+          solveTry = solveTry.slice(0, -1);
+        }
+        return;
+      }
+      
+      if (solveTry.length < wordLength) {
+        solveTry += key.dataset.letter.toLowerCase();
+        
+        for (let i = 0; i < solveTry.length; i++) {
+          const solveTryTile = document.querySelector(`div[data-solve-letter-position="${i}"]`)
+          solveTryTile.innerText = solveTry[i].toUpperCase();
+          solveTryTile.classList.add('letter-solve-guess');
+        }
+      }
+    });
+  });
+  
+  trySolveBtn.addEventListener('click', () => {
+    if (solveTry.length !== wordLength) {
+      // Show some visual feedback that word is incomplete
+      solvePreview.classList.add('shake');
+      setTimeout(() => solvePreview.classList.remove('shake'), 500);
+      return;
+    }
+    
+    // Send solve attempt to parent
+    window.parent?.postMessage(
+      {
+        type: 'solvePuzzle',
+        data: {
+          solveAttempt: solveTry
+        }
+      },
+      '*'
+    );
+  });
+}
+
+const resetSolveBoard = () => {
+  const disclaimer = document.getElementById('solve-disclaimer')
+  const ayeAyeBtn = document.getElementById('aye-aye-button')
+  const trySolveBtn = document.getElementById('try-solve-button')
+  const backspace = document.getElementById('backspace-button')
+  const solvePreview = document.getElementById('solve-preview');
+  const letterBoard = document.getElementById('letter-board-dialog');
+  const keyboardContainer = document.getElementById('keyboard-container');
+  
+  backspace.classList.add('hidden');
+  disclaimer.classList.add('hidden');
+  ayeAyeBtn.classList.remove('hidden');
+  trySolveBtn.classList.add('hidden');
+  solvePreview.classList.add('hidden');
+  letterBoard.classList.remove('letter-board-solve');
+  keyboardContainer.classList.remove('solve-keyboard-container');
+  
+  solveTry = '';
+  const solveGuesses = document.querySelectorAll('.solve-preview-tile');
+  solveGuesses.forEach((tile) => tile.classList.remove('wrong'));
+  
+  const modal = document.getElementById('letter-board-modal');
+  modal.classList.add('hidden');
 }
 
 const handleAyeAye = () => {
@@ -620,30 +719,30 @@ class App {
             startTimer(elapsedTime);
           }
           
-          // if (allGames) {
-          //   const buttonContainer = document.getElementById('button-container');
-          //   buttonContainer.innerHTML = '';
-          //   Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-          //     const gameBtn = document.createElement('button');
-          //     gameBtn.className = 'btn-game-dev-use';
-          //     gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-          //     gameBtn.addEventListener('click', () => {
-          //       window.parent?.postMessage(
-          //         {
-          //           type: 'reset',
-          //           data: {
-          //             game,
-          //             playerPosition: {row: 1, col: 1},
-          //             playerEnergy: 30,
-          //             visitedSquares: []
-          //           }
-          //         },
-          //         '*'
-          //       );
-          //     });
-          //     buttonContainer.appendChild(gameBtn)
-          //   })
-          // }
+          if (allGames) {
+            const buttonContainer = document.getElementById('button-container');
+            buttonContainer.innerHTML = '';
+            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+              const gameBtn = document.createElement('button');
+              gameBtn.className = 'btn-game-dev-use';
+              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+              gameBtn.addEventListener('click', () => {
+                window.parent?.postMessage(
+                  {
+                    type: 'reset',
+                    data: {
+                      game,
+                      playerPosition: {row: 1, col: 1},
+                      playerEnergy: 30,
+                      visitedSquares: []
+                    }
+                  },
+                  '*'
+                );
+              });
+              buttonContainer.appendChild(gameBtn)
+            })
+          }
           
           const usernameBox = document.getElementById('you-died-username');
           const survivedUsernameBox = document.getElementById('survived-username')
@@ -682,6 +781,22 @@ class App {
           // Initialize player at stored position
           if (!currentPosition || !arePositionsEqual(currentPosition, position)) {
             movePlayer(position, currentPosition || position);
+          }
+        }
+        
+        if (message.type === 'solveAttempt') {
+          const { correct, playerEnergy: redisPlayerEnergy } = message.data;
+          currentEnergy = redisPlayerEnergy;
+          playerEnergy.innerText = currentEnergy;
+          
+          if (currentEnergy <= 0 && !correct) {
+            const modal = document.getElementById('you-died-modal');
+            modal.classList.remove('hidden');
+          }
+          
+          if (correct === false) {
+            document.querySelectorAll('.solve-preview-tile').forEach((tile) => tile.classList.add('wrong'));
+            setTimeout(resetSolveBoard, 2000)
           }
         }
         
@@ -754,6 +869,10 @@ class App {
         modal.classList.add('hidden');
       });
     });
+    
+    //Solve
+    const solveBtn = document.getElementById('solve-button');
+    solveBtn.addEventListener('click', handleSolveButtonClick)
   }
 }
 
