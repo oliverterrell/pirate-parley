@@ -719,30 +719,30 @@ class App {
             startTimer(elapsedTime);
           }
           
-          if (allGames) {
-            const buttonContainer = document.getElementById('button-container');
-            buttonContainer.innerHTML = '';
-            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-              const gameBtn = document.createElement('button');
-              gameBtn.className = 'btn-game-dev-use';
-              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-              gameBtn.addEventListener('click', () => {
-                window.parent?.postMessage(
-                  {
-                    type: 'reset',
-                    data: {
-                      game,
-                      playerPosition: {row: 1, col: 1},
-                      playerEnergy: 30,
-                      visitedSquares: []
-                    }
-                  },
-                  '*'
-                );
-              });
-              buttonContainer.appendChild(gameBtn)
-            })
-          }
+          // if (allGames) {
+          //   const buttonContainer = document.getElementById('button-container');
+          //   buttonContainer.innerHTML = '';
+          //   Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+          //     const gameBtn = document.createElement('button');
+          //     gameBtn.className = 'btn-game-dev-use';
+          //     gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+          //     gameBtn.addEventListener('click', () => {
+          //       window.parent?.postMessage(
+          //         {
+          //           type: 'reset',
+          //           data: {
+          //             game,
+          //             playerPosition: {row: 1, col: 1},
+          //             playerEnergy: 30,
+          //             visitedSquares: []
+          //           }
+          //         },
+          //         '*'
+          //       );
+          //     });
+          //     buttonContainer.appendChild(gameBtn)
+          //   })
+          // }
           
           const usernameBox = document.getElementById('you-died-username');
           const survivedUsernameBox = document.getElementById('survived-username')
