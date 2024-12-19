@@ -106,8 +106,7 @@ export const Welcome = ({
                   alignment={'center middle'} width={'90%'}>
             <image url={'img_died.png'} imageWidth={'120px'} imageHeight={'120px'} description={'Nobody survived'}/>
             <zstack alignment={'start middle'} padding={'medium'}>
-              <text size={'large'} color={'black'} alignment={'start middle'} wrap={true} width={'60%'}>No one survived
-                the island yesterday.
+              <text size={'large'} color={'black'} alignment={'start middle'} wrap={true} width={'60%'}>Can you survive the island?
               </text>
             </zstack>
           </vstack>
