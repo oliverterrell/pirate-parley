@@ -287,7 +287,7 @@ const updateLetterDisplay = () => {
   document.querySelectorAll('.key').forEach(key => {
     if (!guessedLetters.includes(key.dataset.letter.toLowerCase())) {
       key.addEventListener('click', () => {
-        if (currentLetter) {
+        if (currentLetter && currentLetter !== 'backspace') {
           document.querySelector(`div[data-letter="${currentLetter.toUpperCase()}"]`).classList.remove('selected');
         }
         currentLetter = key.dataset.letter.toLowerCase();
@@ -382,6 +382,32 @@ const handleChestSquare = () => {
   openLetterBoard();
 }
 
+const solveKeyHandler = (event) => {
+  const key = event.currentTarget;
+  
+  if (key.dataset.letter === 'backspace') {
+    if (solveTry.length > 0) {
+      const lastTile = document.querySelector(`div[data-solve-letter-position="${solveTry.length - 1}"]`);
+      if (lastTile) {
+        lastTile.classList.remove('letter-solve-guess');
+        lastTile.innerText = '';
+      }
+      solveTry = solveTry.slice(0, -1);
+    }
+    return;
+  }
+  
+  if (solveTry.length < wordLength) {
+    solveTry += key.dataset.letter.toLowerCase();
+    
+    for (let i = 0; i < solveTry.length; i++) {
+      const solveTryTile = document.querySelector(`div[data-solve-letter-position="${i}"]`)
+      solveTryTile.innerText = solveTry[i].toUpperCase();
+      solveTryTile.classList.add('letter-solve-guess');
+    }
+  }
+}
+
 const handleSolveButtonClick = () => {
   const title = document.getElementById('letter-board-title');
   const disclaimer = document.getElementById('solve-disclaimer')
@@ -402,7 +428,7 @@ const handleSolveButtonClick = () => {
   for (let i = 0; i < wordLength; i++) {
     solvePreviewTiles += `<div class="solve-preview-tile jersey" data-solve-letter-position="${i}"></div>`;
   }
-
+  
   letterBoard.classList.add('letter-board-solve');
   keyboardContainer.classList.add('solve-keyboard-container');
   
@@ -411,30 +437,8 @@ const handleSolveButtonClick = () => {
   
   openLetterBoard(true);
   
-  document.querySelectorAll('.key').forEach(key => {
-    key.addEventListener('click', () => {
-      if (key.dataset.letter === 'backspace') {
-        if (solveTry.length > 0) {
-          const lastTile = document.querySelector(`div[data-solve-letter-position="${solveTry.length - 1}"]`);
-          if (lastTile) {
-            lastTile.classList.remove('letter-solve-guess');
-            lastTile.innerText = '';
-          }
-          solveTry = solveTry.slice(0, -1);
-        }
-        return;
-      }
-      
-      if (solveTry.length < wordLength) {
-        solveTry += key.dataset.letter.toLowerCase();
-        
-        for (let i = 0; i < solveTry.length; i++) {
-          const solveTryTile = document.querySelector(`div[data-solve-letter-position="${i}"]`)
-          solveTryTile.innerText = solveTry[i].toUpperCase();
-          solveTryTile.classList.add('letter-solve-guess');
-        }
-      }
-    });
+  document.querySelectorAll('.key').forEach((key) => {
+    key.addEventListener('click', solveKeyHandler);
   });
   
   trySolveBtn.addEventListener('click', () => {
@@ -466,6 +470,8 @@ const resetSolveBoard = () => {
   const solvePreview = document.getElementById('solve-preview');
   const letterBoard = document.getElementById('letter-board-dialog');
   const keyboardContainer = document.getElementById('keyboard-container');
+  
+  document.querySelectorAll('.key').forEach((key) => key.classList.remove('selected'))
   
   backspace.classList.add('hidden');
   disclaimer.classList.add('hidden');
@@ -785,9 +791,13 @@ class App {
         }
         
         if (message.type === 'solveAttempt') {
-          const { correct, playerEnergy: redisPlayerEnergy } = message.data;
+          const {correct, playerEnergy: redisPlayerEnergy, finalScore, energyRemaining, timeToSolve} = message.data;
           currentEnergy = redisPlayerEnergy;
           playerEnergy.innerText = currentEnergy;
+          
+          document.querySelectorAll('.key').forEach((key) => {
+            key.removeEventListener('click', solveKeyHandler)
+          })
           
           if (currentEnergy <= 0 && !correct) {
             const modal = document.getElementById('you-died-modal');
@@ -796,7 +806,29 @@ class App {
           
           if (correct === false) {
             document.querySelectorAll('.solve-preview-tile').forEach((tile) => tile.classList.add('wrong'));
-            setTimeout(resetSolveBoard, 2000)
+            setTimeout(resetSolveBoard, 1800)
+          } else {
+            clearInterval(timerInterval);
+            const survivedEnergy = document.getElementById('survived-energy');
+            const survivedTime = document.getElementById('survived-time');
+            const survivedScore = document.getElementById('survived-puzzle');
+            survivedScore.innerText = finalScore + 'pts';
+            playerScore.innerText = finalScore;
+            survivedEnergy.innerText = energyRemaining + '/30';
+            const minutes = Math.floor(timeToSolve / 60);
+            const seconds = timeToSolve % 60;
+            survivedTime.innerText = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+            
+            document.querySelectorAll('.solve-preview-tile').forEach((tile) => tile.classList.add('correct'));
+            
+            setTimeout(() => {
+              const modal = document.getElementById('survived-modal');
+              modal.classList.remove('hidden');
+              const letterModal = document.getElementById('letter-board-modal');
+              letterModal.classList.add('hidden');
+              
+            }, 1500)
+            
           }
         }
         
@@ -816,7 +848,7 @@ class App {
           guessedLetters = redisGuessedLetters;
           partialWord = redisPartialWord;
           
-          playerScore.innerText = redisPlayerScore;
+          playerScore.innerText = currentScore;
           
           updateLetterDisplay();
           
@@ -829,6 +861,9 @@ class App {
             playerScore.innerText = finalScore;
             const modal = document.getElementById('survived-modal');
             modal.classList.remove('hidden');
+            
+            const letterModal = document.getElementById('letter-board-modal');
+            letterModal.classList.add('hidden');
             
             survivedEnergy.innerText = energyRemaining + '/30';
             const minutes = Math.floor(timeToSolve / 60);

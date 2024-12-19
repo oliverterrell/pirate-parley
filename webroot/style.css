@@ -240,6 +240,10 @@ body {
   line-height: 1.5rem;
   margin: 2px;
 }
+.solve-preview-tile {
+  width: 25px !important;
+  height: 25px !important;
+}
 
 .bottom-solve-bar {
   position: absolute;
@@ -543,11 +547,11 @@ button:active {
   border: none !important;
 }
 .correct {
-  width: 25px;
-  height: 25px;
-  border: none;
-  background-color: #1AC528;
-  cursor: default;
+  width: 25px !important;
+  height: 25px !important;
+  border: none !important;
+  background-color: #1AC528 !important;
+  cursor: default !important;
 }
 .incorrect {
   width: 25px;

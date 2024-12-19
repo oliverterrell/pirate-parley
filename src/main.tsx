@@ -349,10 +349,11 @@ Devvit.addCustomPostType({
             await context.redis.set(scoreKey, finalScore.toString());
             
             context.ui.webView.postMessage('myWebView', {
-              type: 'guessLetter',
+              type: 'solveAttempt',
               data: {
                 correct: true,
                 timeToSolve: elapsedTime,
+                playerEnergy,
                 energyRemaining: playerEnergy,
                 finalScore
               },
