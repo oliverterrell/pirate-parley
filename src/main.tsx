@@ -104,6 +104,8 @@ Devvit.addTrigger({
     
     console.log("\n[devdrbo] app installed\n")
     
+    await context.redis.set('day', '1');
+    
     const jobId = await context.scheduler.runJob({
       cron: '0 7 * * *',
       name: 'new-day',
