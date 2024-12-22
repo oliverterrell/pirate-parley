@@ -347,11 +347,19 @@ h3 {
   line-height: 1.5;
   padding-bottom: 40px;
 }
+
 #how-to-play-x-button {
   position: absolute;
   cursor: pointer;
   padding-left: 35px;
   font-size: 40px;
+}
+#letter-board-x-button {
+  position: absolute;
+  cursor: pointer;
+  font-size: 35px;
+  padding-top: 3px;
+  padding-left: 15px;
 }
 .points-earned-table {
   width: 90%;
@@ -469,7 +477,9 @@ button:active {
 }
 
 .letter-board-solve {
-  height: 250px !important;
+  height: 238px !important;
+  width: 382px !important;
+  transform: translateX(calc(-50% - 5px)) translateY(-5px) !important;
 }
   .you-died-dialog {
     border-color: #EC1216;
@@ -553,6 +563,7 @@ button:active {
   background-color: #1AC528 !important;
   cursor: default !important;
 }
+
 .incorrect {
   width: 25px;
   height: 25px;
@@ -572,6 +583,10 @@ button:active {
 
 .keyboard-row:nth-child(3) {
   margin-left: 23px; /* One and a half key widths for bottom row */
+}
+
+.pointer {
+  cursor: pointer !important;
 }
 
 @media (max-width: 640px) {

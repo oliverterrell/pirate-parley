@@ -357,7 +357,8 @@ Devvit.addCustomPostType({
                 timeToSolve: elapsedTime,
                 playerEnergy,
                 energyRemaining: playerEnergy,
-                finalScore
+                finalScore,
+                finalWord: word
               },
             });
             

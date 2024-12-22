@@ -281,6 +281,11 @@ const cleanupPosition = (position, handlers) => {
   });
 };
 
+const resetLetterDisplay = () => {
+  document.querySelectorAll('.key').forEach(key => {
+    key.classList.remove('selected');
+  });
+}
 const updateLetterDisplay = () => {
   if (!guessedLetters) return;
   
@@ -380,6 +385,8 @@ const handleChestSquare = () => {
   const title = document.getElementById('letter-board-title');
   title.innerHTML = 'Choose wisely';
   openLetterBoard();
+  const xBtn = document.getElementById('letter-board-x-button');
+  xBtn.classList.add('hidden');
 }
 
 const solveKeyHandler = (event) => {
@@ -409,6 +416,7 @@ const solveKeyHandler = (event) => {
 }
 
 const handleSolveButtonClick = () => {
+  const xBtn = document.getElementById('letter-board-x-button');
   const title = document.getElementById('letter-board-title');
   const disclaimer = document.getElementById('solve-disclaimer')
   const ayeAyeBtn = document.getElementById('aye-aye-button')
@@ -419,6 +427,7 @@ const handleSolveButtonClick = () => {
   const keyboardContainer = document.getElementById('keyboard-container');
   
   title.innerHTML = 'Solve The Puzzle';
+  xBtn.classList.remove('hidden');
   disclaimer.classList.remove('hidden');
   ayeAyeBtn.classList.add('hidden');
   trySolveBtn.classList.remove('hidden');
@@ -438,6 +447,7 @@ const handleSolveButtonClick = () => {
   openLetterBoard(true);
   
   document.querySelectorAll('.key').forEach((key) => {
+    key.classList.add('pointer');
     key.addEventListener('click', solveKeyHandler);
   });
   
@@ -471,7 +481,10 @@ const resetSolveBoard = () => {
   const letterBoard = document.getElementById('letter-board-dialog');
   const keyboardContainer = document.getElementById('keyboard-container');
   
-  document.querySelectorAll('.key').forEach((key) => key.classList.remove('selected'))
+  document.querySelectorAll('.key').forEach((key) => {
+    key.classList.remove('selected');
+    key.classList.remove('pointer');
+  })
   
   backspace.classList.add('hidden');
   disclaimer.classList.add('hidden');
@@ -693,7 +706,6 @@ class App {
           );
         }
         
-        // Load initial data
         if (message.type === 'initialData') {
           console.log('Initial data received:', message.data);
           const {
@@ -791,7 +803,7 @@ class App {
         }
         
         if (message.type === 'solveAttempt') {
-          const {correct, playerEnergy: redisPlayerEnergy, finalScore, energyRemaining, timeToSolve} = message.data;
+          const {correct, playerEnergy: redisPlayerEnergy, finalScore, energyRemaining, timeToSolve, finalWord} = message.data;
           currentEnergy = redisPlayerEnergy;
           playerEnergy.innerText = currentEnergy;
           
@@ -809,6 +821,13 @@ class App {
             setTimeout(resetSolveBoard, 1800)
           } else {
             clearInterval(timerInterval);
+            
+            let solveTiles = ``;
+            for (let i = 0; i < finalWord.length; i++) {
+              solveTiles += `<div class="solve-tile jersey correct" data-letter-position="${i}">${finalWord.charAt(i).toUpperCase()}</div>`;
+            }
+            
+            document.getElementById('solve-tiles-container').innerHTML = solveTiles;
             const survivedEnergy = document.getElementById('survived-energy');
             const survivedTime = document.getElementById('survived-time');
             const survivedScore = document.getElementById('survived-puzzle');
@@ -908,6 +927,12 @@ class App {
     //Solve
     const solveBtn = document.getElementById('solve-button');
     solveBtn.addEventListener('click', handleSolveButtonClick)
+    
+    const solveXBtn = document.getElementById('letter-board-x-button');
+    solveXBtn.addEventListener('click', () => {
+      resetSolveBoard();
+      resetLetterDisplay();
+    });
   }
 }
 

@@ -3,13 +3,13 @@ import moment from 'moment'
 
 //import ranking data, pass as props
 export const Welcome = ({
-                          gameComplete,
-                          webviewVisible,
-                          username,
-                          onShowWebviewClick,
-                          leaderboard = [],
-                          playerResult = []
-                        }) => {
+  gameComplete,
+  webviewVisible,
+  username,
+  onShowWebviewClick,
+  leaderboard = [],
+  playerResult = []
+}) => {
   return (
     <vstack
       grow={!webviewVisible}
