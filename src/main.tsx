@@ -1,6 +1,7 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
+import { LeaderboardManager } from './LeaderboardManager.js';
 import { ScoreManager } from './ScoreManager.js';
 import { DateManager } from './DateManager.js';
 import * as games from './gameDict.js';
@@ -306,6 +307,13 @@ Devvit.addCustomPostType({
             
             await context.redis.set(scoreKey, finalScore.toString())
             
+            await LeaderboardManager.addScore(context, {
+              username,
+              score: finalScore,
+              timeToSolve: elapsedTime,
+              energyRemaining: playerEnergy
+            });
+            
             setGameComplete(true);
           }
           
@@ -347,6 +355,12 @@ Devvit.addCustomPostType({
             const finalScore = playerScore + timeBonus + energyBonus + (10 * word.length);
             await context.redis.set(scoreKey, finalScore.toString());
             
+            await LeaderboardManager.addScore(context, {
+              username,
+              score: finalScore,
+              timeToSolve: elapsedTime,
+              energyRemaining: playerEnergy
+            });
             
             context.ui.webView.postMessage('myWebView', {
               type: 'solveAttempt',

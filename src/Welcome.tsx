@@ -1,15 +1,19 @@
 import { Devvit } from "@devvit/public-api";
 import moment from 'moment'
+import { LeaderboardManager } from './LeaderboardManager.js';
 
 //import ranking data, pass as props
 export const Welcome = ({
+  context,
   gameComplete,
   webviewVisible,
   username,
   onShowWebviewClick,
-  leaderboard = [],
-  playerResult = []
 }) => {
+  
+  // const leaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+  // const playerResult = [];
+  
   return (
     <vstack
       grow={!webviewVisible}
