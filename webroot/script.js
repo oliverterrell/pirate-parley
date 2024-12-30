@@ -737,30 +737,30 @@ class App {
             startTimer(elapsedTime);
           }
           
-          // if (allGames) {
-          //   const buttonContainer = document.getElementById('button-container');
-          //   buttonContainer.innerHTML = '';
-          //   Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-          //     const gameBtn = document.createElement('button');
-          //     gameBtn.className = 'btn-game-dev-use';
-          //     gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-          //     gameBtn.addEventListener('click', () => {
-          //       window.parent?.postMessage(
-          //         {
-          //           type: 'reset',
-          //           data: {
-          //             game,
-          //             playerPosition: {row: 1, col: 1},
-          //             playerEnergy: 30,
-          //             visitedSquares: []
-          //           }
-          //         },
-          //         '*'
-          //       );
-          //     });
-          //     buttonContainer.appendChild(gameBtn)
-          //   })
-          // }
+          if (allGames) {
+            const buttonContainer = document.getElementById('button-container');
+            buttonContainer.innerHTML = '';
+            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+              const gameBtn = document.createElement('button');
+              gameBtn.className = 'btn-game-dev-use';
+              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+              gameBtn.addEventListener('click', () => {
+                window.parent?.postMessage(
+                  {
+                    type: 'reset',
+                    data: {
+                      game,
+                      playerPosition: {row: 1, col: 1},
+                      playerEnergy: 30,
+                      visitedSquares: []
+                    }
+                  },
+                  '*'
+                );
+              });
+              buttonContainer.appendChild(gameBtn)
+            })
+          }
           
           const usernameBox = document.getElementById('you-died-username');
           const survivedUsernameBox = document.getElementById('survived-username')
@@ -803,7 +803,16 @@ class App {
         }
         
         if (message.type === 'solveAttempt') {
-          const {correct, playerEnergy: redisPlayerEnergy, finalScore, energyRemaining, timeToSolve, finalWord} = message.data;
+          const {
+            timeBonus,
+            energyBonus,
+            correct,
+            playerEnergy: redisPlayerEnergy,
+            finalScore,
+            energyRemaining,
+            timeToSolve,
+            finalWord
+          } = message.data;
           currentEnergy = redisPlayerEnergy;
           playerEnergy.innerText = currentEnergy;
           
@@ -829,8 +838,12 @@ class App {
             
             document.getElementById('solve-tiles-container').innerHTML = solveTiles;
             const survivedEnergy = document.getElementById('survived-energy');
+            const energyBonusDisplay = document.getElementById('energy-bonus');
             const survivedTime = document.getElementById('survived-time');
+            const timeBonusDisplay = document.getElementById('time-bonus');
             const survivedScore = document.getElementById('survived-puzzle');
+            timeBonusDisplay.innerText = timeBonus + 'pts';
+            energyBonusDisplay.innerText = energyBonus + 'pts';
             survivedScore.innerText = finalScore + 'pts';
             playerScore.innerText = finalScore;
             survivedEnergy.innerText = energyRemaining + '/30';
@@ -859,7 +872,9 @@ class App {
             gameComplete,
             energyRemaining,
             timeToSolve,
-            finalScore
+            finalScore,
+            timeBonus,
+            energyBonus
           } = message.data;
           
           currentScore = redisPlayerScore || 0;
@@ -874,8 +889,12 @@ class App {
           if (gameComplete) {
             clearInterval(timerInterval);
             const survivedEnergy = document.getElementById('survived-energy');
+            const timeBonusDisplay = document.getElementById('time-bonus');
+            const energyBonusDisplay = document.getElementById('energy-bonus');
             const survivedTime = document.getElementById('survived-time');
             const survivedScore = document.getElementById('survived-puzzle');
+            timeBonusDisplay.innerText = timeBonus + 'pts';
+            energyBonusDisplay.innerText = energyBonus + 'pts';
             survivedScore.innerText = finalScore + 'pts';
             playerScore.innerText = finalScore;
             const modal = document.getElementById('survived-modal');

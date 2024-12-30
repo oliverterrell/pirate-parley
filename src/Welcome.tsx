@@ -137,7 +137,7 @@ export const Welcome = ({
       
       <vstack gap={'none'} padding={'large'} alignment={'center bottom'}>
         <text weight={'bold'} size={'small'} color={'black'} style={'heading'}>{moment().format('MMMM D, YYYY')}</text>
-        <zstack onPress={gameComplete ? undefined : onShowWebviewClick} width={'200px'} height={'29px'}
+        <zstack onPress={onShowWebviewClick} width={'200px'} height={'29px'}
                 alignment={'center middle'} border={'thick'} borderColor={'white'}
                 backgroundColor={`#09a87e`}>
           {gameComplete

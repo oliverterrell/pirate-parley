@@ -1,6 +1,7 @@
 import './createPost.js';
 
 import { Devvit, useState } from '@devvit/public-api';
+import { ScoreManager } from './ScoreManager.js';
 import { DateManager } from './DateManager.js';
 import * as games from './gameDict.js';
 import { Welcome } from "./Welcome.js"
@@ -242,6 +243,7 @@ Devvit.addCustomPostType({
           setGuessedLetters([])
           setElapsedTime(0)
           break;
+          
         case 'movePlayer':
           console.log('move player', msg.data.playerPosition, 'Energy:', msg.data.playerEnergy);
           
@@ -262,6 +264,7 @@ Devvit.addCustomPostType({
           setPlayerEnergy(msg.data.playerEnergy);
           setVisitedSquares(msg.data.visitedSquares);
           break;
+          
         case 'guessLetter': {
           console.log("guessing letter", msg.data.letter);
           
@@ -291,18 +294,15 @@ Devvit.addCustomPostType({
           
           let gameComplete = false;
           let finalScore = null;
+          let timeBonus = null;
+          let energyBonus = null;
           if (newPartialWord === word) {
             gameComplete = true;
             await context.redis.set(gameCompleteKey, 'true');
             
-            let timeBonus = 0;
-            if (elapsedTime < 300) {
-              timeBonus = 50;
-            } else if (elapsedTime < 600) {
-              timeBonus = 20;
-            }
+            let { timeBonus, energyBonus } = ScoreManager.getScoreBonuses({ elapsedTime, energyRemaining: playerEnergy })
             
-            finalScore = newScore + timeBonus + playerEnergy;
+            finalScore = newScore + timeBonus + energyBonus;
             
             await context.redis.set(scoreKey, finalScore.toString())
             
@@ -318,6 +318,8 @@ Devvit.addCustomPostType({
               partialWord: newPartialWord,
               playerScore: newScore,
               gameComplete,
+              timeBonus,
+              energyBonus,
               timeToSolve: timeElapsed,
               energyRemaining: playerEnergy,
               finalScore
@@ -340,15 +342,11 @@ Devvit.addCustomPostType({
           if (isCorrect) {
             await context.redis.set(gameCompleteKey, 'true');
             
-            let timeBonus = 0;
-            if (elapsedTime < 300) {
-              timeBonus = 50;
-            } else if (elapsedTime < 600) {
-              timeBonus = 20;
-            }
+            const { timeBonus, energyBonus } = ScoreManager.getScoreBonuses({ elapsedTime, energyRemaining: playerEnergy })
             
-            const finalScore = playerScore + timeBonus + playerEnergy + (10 * word.length);
+            const finalScore = playerScore + timeBonus + energyBonus + (10 * word.length);
             await context.redis.set(scoreKey, finalScore.toString());
+            
             
             context.ui.webView.postMessage('myWebView', {
               type: 'solveAttempt',
@@ -358,6 +356,8 @@ Devvit.addCustomPostType({
                 playerEnergy,
                 energyRemaining: playerEnergy,
                 finalScore,
+                timeBonus,
+                energyBonus,
                 finalWord: word
               },
             });
@@ -392,11 +392,11 @@ Devvit.addCustomPostType({
         case 'hideWebView':
           setWebviewVisible(false);
           break;
-        
-        
+          
         case 'initialData':
         case 'toggleLevelSelection':
           break;
+          
         default:
           throw new Error(`Unknown message type: ${msg satisfies never}`);
       }
