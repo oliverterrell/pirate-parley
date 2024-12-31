@@ -737,30 +737,30 @@ class App {
             startTimer(elapsedTime);
           }
           
-          if (allGames) {
-            const buttonContainer = document.getElementById('button-container');
-            buttonContainer.innerHTML = '';
-            Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
-              const gameBtn = document.createElement('button');
-              gameBtn.className = 'btn-game-dev-use';
-              gameBtn.innerHTML = (i + 1) + '. ' + game.word;
-              gameBtn.addEventListener('click', () => {
-                window.parent?.postMessage(
-                  {
-                    type: 'reset',
-                    data: {
-                      game,
-                      playerPosition: {row: 1, col: 1},
-                      playerEnergy: 30,
-                      visitedSquares: []
-                    }
-                  },
-                  '*'
-                );
-              });
-              buttonContainer.appendChild(gameBtn)
-            })
-          }
+          // if (allGames) {
+          //   const buttonContainer = document.getElementById('button-container');
+          //   buttonContainer.innerHTML = '';
+          //   Object.entries(allGames).sort(([keyA, gA], [keyB, gB]) => parseInt(keyA.split('_')[1]) - parseInt(keyB.split('_')[1])).forEach(([_, game], i) => {
+          //     const gameBtn = document.createElement('button');
+          //     gameBtn.className = 'btn-game-dev-use';
+          //     gameBtn.innerHTML = (i + 1) + '. ' + game.word;
+          //     gameBtn.addEventListener('click', () => {
+          //       window.parent?.postMessage(
+          //         {
+          //           type: 'reset',
+          //           data: {
+          //             game,
+          //             playerPosition: {row: 1, col: 1},
+          //             playerEnergy: 30,
+          //             visitedSquares: []
+          //           }
+          //         },
+          //         '*'
+          //       );
+          //     });
+          //     buttonContainer.appendChild(gameBtn)
+          //   })
+          // }
           
           const usernameBox = document.getElementById('you-died-username');
           const survivedUsernameBox = document.getElementById('survived-username')
@@ -811,7 +811,9 @@ class App {
             finalScore,
             energyRemaining,
             timeToSolve,
-            finalWord
+            finalWord,
+            playerRank,
+            leaderboardLength
           } = message.data;
           currentEnergy = redisPlayerEnergy;
           playerEnergy.innerText = currentEnergy;
@@ -842,6 +844,9 @@ class App {
             const survivedTime = document.getElementById('survived-time');
             const timeBonusDisplay = document.getElementById('time-bonus');
             const survivedScore = document.getElementById('survived-puzzle');
+            const leaderboardRank = document.getElementById('leaderboard-rank');
+            
+            leaderboardRank.innerText = playerRank + '/' + leaderboardLength;
             timeBonusDisplay.innerText = timeBonus + 'pts';
             energyBonusDisplay.innerText = energyBonus + 'pts';
             survivedScore.innerText = finalScore + 'pts';
@@ -874,7 +879,9 @@ class App {
             timeToSolve,
             finalScore,
             timeBonus,
-            energyBonus
+            energyBonus,
+            playerRank,
+            leaderboardLength,
           } = message.data;
           
           currentScore = redisPlayerScore || 0;
@@ -892,11 +899,15 @@ class App {
             const timeBonusDisplay = document.getElementById('time-bonus');
             const energyBonusDisplay = document.getElementById('energy-bonus');
             const survivedTime = document.getElementById('survived-time');
+            const leaderboardRank = document.getElementById('leaderboard-rank');
             const survivedScore = document.getElementById('survived-puzzle');
+            
             timeBonusDisplay.innerText = timeBonus + 'pts';
+            leaderboardRank.innerText = playerRank + '/' + leaderboardLength;
             energyBonusDisplay.innerText = energyBonus + 'pts';
             survivedScore.innerText = finalScore + 'pts';
             playerScore.innerText = finalScore;
+            
             const modal = document.getElementById('survived-modal');
             modal.classList.remove('hidden');
             

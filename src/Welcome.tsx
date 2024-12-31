@@ -2,8 +2,10 @@ import { Devvit } from "@devvit/public-api";
 import moment from 'moment'
 import { LeaderboardManager } from './LeaderboardManager.js';
 
-const LeaderboardRow = ({ data, rank }) => {
-  const timeDisplay = data.timeToSolve + 'format';
+const LeaderboardRow = ({data, rank}) => {
+  const minutes = Math.floor(data.timeToSolve / 60);
+  const seconds = data.timeToSolve % 60;
+  const timeDisplay = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
   
   return <hstack
     padding={'small'}
@@ -32,6 +34,14 @@ export const Welcome = ({
   
   const playerRank = LeaderboardManager.getPlayerRank(leaderboard, username);
   const playerResult = leaderboard?.[playerRank - 1] ?? undefined;
+  
+  let playerTimeDisplay = '';
+  
+  if (playerResult) {
+    const minutes = Math.floor(playerResult.timeToSolve / 60);
+    const seconds = playerResult.timeToSolve % 60;
+    playerTimeDisplay = `${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+  }
   
   return (
     <vstack
@@ -65,14 +75,14 @@ export const Welcome = ({
         {leaderboard.length ?
           <vstack alignment="start middle" border={'thick'} borderColor={'#e89a60'} width={'100%'}>
             {leaderboard.slice(0, 4).map((result: any, i: number) => {
-              return <LeaderboardRow data={result} rank={i} />
+              return <LeaderboardRow data={result} rank={i}/>
             })}
           </vstack> :
           <vstack gap={'small'} backgroundColor={'#fae289'} border={'thick'} borderColor={'#e89a60'} padding={'large'}
                   alignment={'center middle'} width={'90%'}>
             <image url={'img_died.png'} imageWidth={'120px'} imageHeight={'120px'} description={'Nobody survived'}/>
             <zstack alignment={'start middle'} padding={'medium'}>
-              <text size={'large'} color={'black'} alignment={'start middle'} wrap={true} width={'60%'}>Can you survive the island?
+              <text size={'large'} color={'black'} alignment={'start middle'} wrap={true} width={'60%'}>No one survived the island yesterday.
               </text>
             </zstack>
           </vstack>
@@ -96,14 +106,14 @@ export const Welcome = ({
           <text size={'small'} color={'black'} alignment={'start middle'}>{playerRank}</text>
           <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}
                 weight={'bold'}>{username ? 'u/' + username : ''}</text>
-          <text size={'small'} color={'black'} alignment={'center middle'}>{playerResult.timeToSolve}</text>
+          <text size={'small'} color={'black'} alignment={'center middle'}>{playerTimeDisplay}</text>
           <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>{playerResult.score}pts</text>
         </hstack>
       </vstack> : null}
       
       <vstack gap={'none'} padding={'large'} alignment={'center bottom'}>
         <text weight={'bold'} size={'small'} color={'black'} style={'heading'}>{moment().format('MMMM D, YYYY')}</text>
-        <zstack onPress={onShowWebviewClick} width={'200px'} height={'29px'}
+        <zstack onPress={gameComplete ? undefined : onShowWebviewClick} width={'200px'} height={'29px'}
                 alignment={'center middle'} border={'thick'} borderColor={'white'}
                 backgroundColor={`#09a87e`}>
           {gameComplete

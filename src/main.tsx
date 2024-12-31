@@ -171,7 +171,7 @@ Devvit.addCustomPostType({
     
     const [playerPosition, setPlayerPosition] = useState(async () => {
       const playerPosition = await context.redis.get(positionKey);
-      return playerPosition ? JSON.parse(playerPosition) : {row: 1, col: 1};
+      return playerPosition ? JSON.parse(playerPosition) : { row: 1, col: 1 };
     })
     
     const [playerEnergy, setPlayerEnergy] = useState(async () => {
@@ -302,6 +302,8 @@ Devvit.addCustomPostType({
           let finalScore = null;
           let timeBonus = null;
           let energyBonus = null;
+          let playerRank = null;
+          let leaderboard = null;
           if (newPartialWord === word) {
             gameComplete = true;
             await context.redis.set(gameCompleteKey, 'true');
@@ -322,6 +324,8 @@ Devvit.addCustomPostType({
             const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
             setLeaderboard(JSON.stringify(updatedLeaderboard));
             
+            playerRank = LeaderboardManager.getPlayerRank(updatedLeaderboard, username)
+            
             setGameComplete(true);
           }
           
@@ -338,7 +342,9 @@ Devvit.addCustomPostType({
               energyBonus,
               timeToSolve: timeElapsed,
               energyRemaining: playerEnergy,
-              finalScore
+              finalScore,
+              playerRank,
+              leaderboardLength: leaderboard ? JSON.parse(leaderboard).length : null
             },
           });
           
@@ -370,8 +376,10 @@ Devvit.addCustomPostType({
               energyRemaining: playerEnergy
             });
             
-            const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+            const updatedLeaderboard = await LeaderboardManager.getLeaderboard(context, DateManager.getGameDateString());
             setLeaderboard(JSON.stringify(updatedLeaderboard));
+            
+            const playerRank = LeaderboardManager.getPlayerRank(updatedLeaderboard, username);
             
             context.ui.webView.postMessage('myWebView', {
               type: 'solveAttempt',
@@ -383,7 +391,9 @@ Devvit.addCustomPostType({
                 finalScore,
                 timeBonus,
                 energyBonus,
-                finalWord: word
+                finalWord: word,
+                playerRank,
+                leaderboardLength: leaderboard.length
               },
             });
             
@@ -427,9 +437,9 @@ Devvit.addCustomPostType({
       }
     };
     
-    // When the button is clicked, send initial data to web view and show it
     const onShowWebviewClick = async () => {
       let allGames = null;
+      
       if (context.reddit.getCurrentUser().then(user => user.modPermissions.has('all'))) {
         allGames = games;
       }
