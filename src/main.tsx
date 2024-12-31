@@ -376,7 +376,7 @@ Devvit.addCustomPostType({
               energyRemaining: playerEnergy
             });
             
-            const updatedLeaderboard = await LeaderboardManager.getLeaderboard(context, DateManager.getGameDateString());
+            const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
             setLeaderboard(JSON.stringify(updatedLeaderboard));
             
             const playerRank = LeaderboardManager.getPlayerRank(updatedLeaderboard, username);
