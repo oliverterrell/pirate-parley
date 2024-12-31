@@ -201,6 +201,11 @@ Devvit.addCustomPostType({
     
     const [webviewVisible, setWebviewVisible] = useState(false);
     
+    const [leaderboard, setLeaderboard] = useState(async () => {
+      const leaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+      return JSON.stringify(leaderboard);
+    });
+    
     // When the web view invokes `window.parent.postMessage` this function is called
     const onMessage = async (msg: WebViewMessage) => {
       switch (msg.type) {
@@ -314,6 +319,9 @@ Devvit.addCustomPostType({
               energyRemaining: playerEnergy
             });
             
+            const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+            setLeaderboard(JSON.stringify(updatedLeaderboard));
+            
             setGameComplete(true);
           }
           
@@ -361,6 +369,9 @@ Devvit.addCustomPostType({
               timeToSolve: elapsedTime,
               energyRemaining: playerEnergy
             });
+            
+            const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+            setLeaderboard(JSON.stringify(updatedLeaderboard));
             
             context.ui.webView.postMessage('myWebView', {
               type: 'solveAttempt',
@@ -417,12 +428,14 @@ Devvit.addCustomPostType({
     };
     
     // When the button is clicked, send initial data to web view and show it
-    const onShowWebviewClick = () => {
-      // if (gameComplete) return;
+    const onShowWebviewClick = async () => {
       let allGames = null;
       if (context.reddit.getCurrentUser().then(user => user.modPermissions.has('all'))) {
         allGames = games;
       }
+      
+      const updatedLeaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
+      setLeaderboard(JSON.stringify(updatedLeaderboard));
       
       setWebviewVisible(true);
       context.ui.webView.postMessage('myWebView', {
@@ -447,6 +460,7 @@ Devvit.addCustomPostType({
     return (
       <vstack grow padding="small">
         <Welcome
+          leaderboard={JSON.parse(leaderboard)}
           username={username}
           gameComplete={gameComplete}
           webviewVisible={webviewVisible}

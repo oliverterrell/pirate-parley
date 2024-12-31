@@ -2,17 +2,36 @@ import { Devvit } from "@devvit/public-api";
 import moment from 'moment'
 import { LeaderboardManager } from './LeaderboardManager.js';
 
-//import ranking data, pass as props
+const LeaderboardRow = ({ data, rank }) => {
+  const timeDisplay = data.timeToSolve + 'format';
+  
+  return <hstack
+    padding={'small'}
+    alignment={'start middle'}
+    gap="large"
+    width={'100%'}
+    height={'38px'}
+    backgroundColor={'#fae289'}
+    border={'thin'}
+    borderColor={'#e89a60'}
+  >
+    <text size={'small'} color={'black'} alignment={'start middle'}>{rank + 1}</text>
+    <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}>u/{data.username}</text>
+    <text size={'small'} color={'black'} alignment={'center middle'}>{timeDisplay}</text>
+    <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>{data.score}pts</text>
+  </hstack>
+}
+
 export const Welcome = ({
-  context,
+  leaderboard = [],
   gameComplete,
   webviewVisible,
   username,
   onShowWebviewClick,
 }) => {
   
-  // const leaderboard = await LeaderboardManager.getPreviousDayLeaderboard(context);
-  // const playerResult = [];
+  const playerRank = LeaderboardManager.getPlayerRank(leaderboard, username);
+  const playerResult = leaderboard?.[playerRank - 1] ?? undefined;
   
   return (
     <vstack
@@ -45,66 +64,9 @@ export const Welcome = ({
         </hstack>
         {leaderboard.length ?
           <vstack alignment="start middle" border={'thick'} borderColor={'#e89a60'} width={'100%'}>
-            <hstack
-              padding={'small'}
-              alignment={'start middle'}
-              gap="large"
-              width={'100%'}
-              height={'38px'}
-              backgroundColor={'#fae289'}
-              border={'thin'}
-              borderColor={'#e89a60'}
-            >
-              <text size={'small'} color={'black'} alignment={'start middle'}>1</text>
-              <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}>u/playername</text>
-              <text size={'small'} color={'black'} alignment={'center middle'}>15m 00s</text>
-              <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>100pts</text>
-            </hstack>
-            <hstack
-              padding={'small'}
-              alignment={'start middle'}
-              gap="large"
-              width={'100%'}
-              height={'38px'}
-              backgroundColor={'#fae289'}
-              border={'thin'}
-              borderColor={'#e89a60'}
-            >
-              <text size={'small'} color={'black'} alignment={'start middle'}>2</text>
-              <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}>u/playername</text>
-              <text size={'small'} color={'black'} alignment={'center middle'}>21m 10s</text>
-              <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>100pts</text>
-            </hstack>
-            <hstack
-              padding={'small'}
-              alignment={'start middle'}
-              gap="large"
-              width={'100%'}
-              height={'38px'}
-              backgroundColor={'#fae289'}
-              border={'thin'}
-              borderColor={'#e89a60'}
-            >
-              <text size={'small'} color={'black'} alignment={'start middle'}>3</text>
-              <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}>u/playername</text>
-              <text size={'small'} color={'black'} alignment={'center middle'}>25m 10s</text>
-              <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>85pts</text>
-            </hstack>
-            <hstack
-              padding={'small'}
-              alignment={'start middle'}
-              gap="large"
-              width={'100%'}
-              height={'38px'}
-              backgroundColor={'#fae289'}
-              border={'thin'}
-              borderColor={'#e89a60'}
-            >
-              <text size={'small'} color={'black'} alignment={'start middle'}>4</text>
-              <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}>u/playername</text>
-              <text size={'small'} color={'black'} alignment={'center middle'}>30m 20s</text>
-              <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>85pts</text>
-            </hstack>
+            {leaderboard.slice(0, 4).map((result: any, i: number) => {
+              return <LeaderboardRow data={result} rank={i} />
+            })}
           </vstack> :
           <vstack gap={'small'} backgroundColor={'#fae289'} border={'thick'} borderColor={'#e89a60'} padding={'large'}
                   alignment={'center middle'} width={'90%'}>
@@ -120,7 +82,7 @@ export const Welcome = ({
       
       <spacer/>
       
-      {playerResult.length ? <vstack border={'thin'} borderColor={'#55a2d1'} width={'90%'}>
+      {playerResult ? <vstack border={'thin'} borderColor={'#55a2d1'} width={'90%'}>
         <hstack
           padding={'small'}
           alignment={'start middle'}
@@ -131,11 +93,11 @@ export const Welcome = ({
           border={'thick'}
           borderColor={'#55a2d1'}
         >
-          <text size={'small'} color={'black'} alignment={'start middle'}>7</text>
+          <text size={'small'} color={'black'} alignment={'start middle'}>{playerRank}</text>
           <text size={'small'} color={'black'} width={'48%'} alignment={'start middle'}
                 weight={'bold'}>{username ? 'u/' + username : ''}</text>
-          <text size={'small'} color={'black'} alignment={'center middle'}>7m 7s</text>
-          <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>777pts</text>
+          <text size={'small'} color={'black'} alignment={'center middle'}>{playerResult.timeToSolve}</text>
+          <text size={'small'} color={'black'} width={'22%'} alignment={'end middle'}>{playerResult.score}pts</text>
         </hstack>
       </vstack> : null}
       
